@@ -1,0 +1,26 @@
+<html><head><title>Facts</title></head>
+<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
+<body>
+<div class="navbar">
+  <a class="navbar-brand active" href="/">Augend</a>
+  <ul class="nav navbar-nav">
+    <li><a href="/tag/">Tags</a></li>
+  </ul>
+</div>
+
+<div class="container">
+{{range .Facts}}
+
+<div class="fact row" id="fact-{{.Key}}">
+  <div class="span6"><h2>{{.Title}}</h2></div>
+  <div class="span6 details"><p>{{.Details}}</p></div>
+
+  <div class="source"><i class="icon-bookmark"></i><b>Source</b>:
+<a href="{{.SourceUrl}}">{{.SourceName}}</a></div>
+
+<div class="added"><i class="icon-chevron-right">
+</i>added <a href="{{.Url}}">{{.Added}}</a></div>
+</div>
+{{end}}
+</div>
+</body></html>

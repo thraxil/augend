@@ -1,0 +1,19 @@
+<html><head><title>Fact: {{.Fact.Title}}</title></head>
+<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
+<body>
+<div class="navbar">
+  <a class="navbar-brand" href="/">Augend</a>
+  <ul class="nav navbar-nav">
+    <li><a href="/tag/">Tags</a></li>
+  </ul>
+</div>
+
+<div class="container">
+<h1>{{.Fact.Title}}</h1>
+<p>{{.Fact.Details}}</p>
+{{if .Fact.SourceName}}
+<p>{{.Fact.SourceName}}</p>
+{{end}}
+<p>added {{.Fact.Added}}</p>
+</div>
+</body></html>

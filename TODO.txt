@@ -1,0 +1,7 @@
+* tags
+** tag index
+** tag page
+* pagination
+* config file
+* bookmarklet page
+* markdown for details
