@@ -5,6 +5,7 @@
   <a class="navbar-brand active" href="/">Augend</a>
   <ul class="nav navbar-nav">
     <li><a href="/tag/">Tags</a></li>
+    <li><a href="/add/">Add</a></li>
   </ul>
 </div>
 
@@ -13,10 +14,19 @@
 
 <div class="fact row" id="fact-{{.Key}}">
   <div class="span6"><h2>{{.Title}}</h2></div>
+{{ if .Details }}
   <div class="span6 details"><p>{{.Details}}</p></div>
-
+{{ end }}
+{{ if .SourceName }}
   <div class="source"><i class="icon-bookmark"></i><b>Source</b>:
 <a href="{{.SourceUrl}}">{{.SourceName}}</a></div>
+{{ end }}
+
+{{if .HasTags }}
+<div>{{range .ListTags}}
+<a href="{{.Url}}">{{.Name}}</a>
+{{end}}</div>
+{{end}}
 
 <div class="added"><i class="icon-chevron-right">
 </i>added <a href="{{.Url}}">{{.Added}}</a></div>

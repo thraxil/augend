@@ -17,6 +17,7 @@ type Fact struct {
 	SourceName string ""
 	SourceUrl string ""
 	Added string ""
+	Tags riak.Many
 	riak.Model `riak:"test.augend.fact"`
 }
 
@@ -25,12 +26,63 @@ func (f *Fact) Url() string {
 }
 
 func (f *Fact) Resolve(count int) (err error) {
+	fmt.Println("resolve fact")
 	return nil
+}
+
+func (f *Fact) AddTag(t string) {
+	tag := getOrCreateTag(t)
+	f.Tags.Add(tag)
+	f.SaveAs(f.Key())
+	tag.Facts.Add(f)
+	tag.SaveAs(t)
+}
+
+func (f *Fact) HasTags() bool {
+	fmt.Println(f.Tags.Len())
+	return f.Tags.Len() > 0
+}
+
+func (f *Fact) ListTags() []Tag {
+	tl := make([]Tag, f.Tags.Len())
+	for i, t := range f.Tags {
+		var ltag Tag
+		t.Get(&ltag)
+		tl[i] = ltag
+	}
+	return tl
 }
 
 type FactIndex struct {
 	Facts riak.Many
 	riak.Model `riak:"test.augend.index"`
+}
+
+func getOrCreateTag(t string) *Tag {
+	var tag Tag
+	err := riak.LoadModel(t, &tag)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("creating new tag")
+		var ntag Tag
+		err := riak.NewModel(t, &ntag)
+		if err != nil {
+			fmt.Println("could not create new tag")
+			fmt.Println(err)
+			return nil
+		}
+		ntag.Name = t
+		ntag.SaveAs(t)
+		tag_index := getOrCreateTagIndex()
+		if tag_index == nil {
+			fmt.Println("no tag index!")
+			return nil
+		}
+		tag_index.Tags.Add(&ntag)
+		tag_index.SaveAs("tag-index")
+		return &ntag
+	}
+	return &tag
 }
 
 func getOrCreateFactIndex() *FactIndex {
@@ -48,7 +100,7 @@ func getOrCreateFactIndex() *FactIndex {
 	return &index
 }
 
-func NewFact(title, details, source_name, source_url string) *Fact {
+func NewFact(title, details, source_name, source_url, tags string) *Fact {
 	var fact Fact
 	u4, err := uuid.NewV4()
 	if err != nil {
@@ -71,6 +123,9 @@ func NewFact(title, details, source_name, source_url string) *Fact {
 	}
 	index.Facts.Add(&fact)
 	index.SaveAs("fact-index")
+	for _, t := range strings.Split(tags, ",") {
+		fact.AddTag(t)
+	}
 	return &fact
 }
 
@@ -142,11 +197,53 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		details := r.PostFormValue("details")
 		source_name := r.PostFormValue("source_name")
 		source_url := r.PostFormValue("source_url")
-		NewFact(title, details, source_name, source_url)
+		tags := r.PostFormValue("tags")
+		NewFact(title, details, source_name, source_url, tags)
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		pattern := filepath.Join("templates", "add.html")
 		tmpl := template.Must(template.ParseGlob(pattern))
 		tmpl.Execute(w, nil)
 	}
+}
+
+type Tag struct {
+	Name string
+	Facts riak.Many
+	riak.Model `riak:"test.augend.tag"`
+}
+
+func (t *Tag) Resolve(count int) (err error) {
+	return nil
+}
+
+func (t *Tag) Url() string {
+	return "/tag/" + t.Name + "/"
+}
+
+type TagIndex struct {
+	Tags riak.Many
+	riak.Model `riak:"test.augend.index"`
+}
+
+func getOrCreateTagIndex() *TagIndex {
+	var index TagIndex
+	err := riak.LoadModel("tag-index", &index)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("creating new tag index")
+		return createTagIndex()
+	}
+	return &index
+}
+
+func createTagIndex() *TagIndex {
+	var nindex TagIndex
+	err := riak.NewModel("tag-index", &nindex)
+	if err != nil {
+		fmt.Println("could not create tag index")
+		fmt.Println(err)
+		return nil
+	}
+	return &nindex
 }

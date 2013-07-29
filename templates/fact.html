@@ -5,6 +5,7 @@
   <a class="navbar-brand" href="/">Augend</a>
   <ul class="nav navbar-nav">
     <li><a href="/tag/">Tags</a></li>
+    <li><a href="/add/">Add</a></li>
   </ul>
 </div>
 
@@ -15,5 +16,13 @@
 <p>{{.Fact.SourceName}}</p>
 {{end}}
 <p>added {{.Fact.Added}}</p>
+
+{{ if .Fact.HasTags }}
+TAGS
+<div>{{range .Fact.ListTags}}
+<a href="{{.Url}}">{{.Name}}</a>
+{{end}}</div>
+{{end}}
+
 </div>
 </body></html>

@@ -1,7 +1,15 @@
 * tags
 ** tag index
 ** tag page
+** show tags on fact page
+** normalize tag names
+*** strip whitespace
+*** lowercase
+*** remove non-URL safe chars
+** autocomplete tags on add form
 * pagination
 * config file
 * bookmarklet page
 * markdown for details
+* bulk import script
+* up to github
