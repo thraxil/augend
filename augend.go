@@ -39,7 +39,6 @@ func (f *Fact) AddTag(t string) {
 }
 
 func (f *Fact) HasTags() bool {
-	fmt.Println(f.Tags.Len())
 	return f.Tags.Len() > 0
 }
 
@@ -173,22 +172,38 @@ type TagIndexResponse struct {
 	Tags []Tag
 }
 
+type TagResponse struct {
+	Tag Tag
+}
+
 func tagHandler(w http.ResponseWriter, r *http.Request) {
-	index := getOrCreateTagIndex()
-	n := index.Tags.Len()
-	tags := make([]Tag, n)
-	for i, t := range index.Tags {
-		var ltag Tag
-		t.Get(&ltag)
-		tags[i] = ltag
+	parts := strings.Split(r.URL.String(), "/")
+	if len(parts) < 3 || parts[2] == "" {
+		index := getOrCreateTagIndex()
+		n := index.Tags.Len()
+		tags := make([]Tag, n)
+		for i, t := range index.Tags {
+			var ltag Tag
+			t.Get(&ltag)
+			tags[i] = ltag
+		}
+
+		ir := TagIndexResponse{
+		Tags: tags,
+		}
+		pattern := filepath.Join("templates", "tags.html")
+		tmpl := template.Must(template.ParseGlob(pattern))
+		tmpl.Execute(w, ir)
+		return
 	}
 
-	ir := TagIndexResponse{
-	Tags: tags,
-	}
-	pattern := filepath.Join("templates", "tags.html")
+	id := parts[2]
+	var tag Tag
+	riak.LoadModel(id, &tag)
+	tr := TagResponse{Tag: tag}
+	pattern := filepath.Join("templates", "tag.html")
 	tmpl := template.Must(template.ParseGlob(pattern))
-	tmpl.Execute(w, ir)
+	tmpl.Execute(w, tr)
 }
 
 type FactResponse struct {
@@ -242,6 +257,18 @@ func (t *Tag) Resolve(count int) (err error) {
 
 func (t *Tag) Url() string {
 	return "/tag/" + t.Name + "/"
+}
+
+func (t *Tag) ListFacts() []Fact {
+	fmt.Println("ListFacts()")
+	fl := make([]Fact, t.Facts.Len())
+	fmt.Println(t.Facts.Len())
+	for i, f := range t.Facts {
+		var lfact Fact
+		f.Get(&lfact)
+		fl[i] = lfact
+	}
+	return fl
 }
 
 type TagIndex struct {

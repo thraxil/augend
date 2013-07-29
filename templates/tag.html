@@ -1,4 +1,4 @@
-<html><head><title>Tags</title></head>
+<html><head><title>Tag: {{.Tag.Name}}</title></head>
 <link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
 <body>
 <div class="navbar">
@@ -10,11 +10,9 @@
 </div>
 
 <div class="container">
-{{range .Tags}}
-
-<div class="fact row" id="tag-{{.Key}}">
-  <div class="span6"><h2><a href="{{.Url}}">{{.Name}}</a></h2></div>
-</div>
+<h1>{{.Tag.Name}}</h1>
+{{range .Tag.ListFacts}}
+<div><a href="{{.Url}}">{{.Title}}</a></div>
 {{end}}
 </div>
 </body></html>
