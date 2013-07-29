@@ -1,11 +1,11 @@
 * tags
-** tag index
 ** tag page
 ** show tags on fact page
 ** normalize tag names
 *** strip whitespace
 *** lowercase
 *** remove non-URL safe chars
+** sort tags index
 ** autocomplete tags on add form
 * pagination
 * config file

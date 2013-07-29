@@ -1,0 +1,20 @@
+<html><head><title>Tags</title></head>
+<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
+<body>
+<div class="navbar">
+  <a class="navbar-brand active" href="/">Augend</a>
+  <ul class="nav navbar-nav">
+    <li><a href="/tag/" class="active">Tags</a></li>
+    <li><a href="/add/">Add</a></li>
+  </ul>
+</div>
+
+<div class="container">
+{{range .Tags}}
+
+<div class="fact row" id="tag-{{.Key}}">
+  <div class="span6"><h2>{{.Name}}</h2></div>
+</div>
+{{end}}
+</div>
+</body></html>

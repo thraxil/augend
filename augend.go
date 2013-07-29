@@ -140,6 +140,7 @@ func main () {
 //	fmt.Println(index.Facts.Len())
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/fact/", factHandler)
+	http.HandleFunc("/tag/", tagHandler)
 	http.HandleFunc("/add/", addHandler)
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir("media"))))
@@ -164,6 +165,28 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	Facts: facts,
 	}
 	pattern := filepath.Join("templates", "index.html")
+	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl.Execute(w, ir)
+}
+
+type TagIndexResponse struct {
+	Tags []Tag
+}
+
+func tagHandler(w http.ResponseWriter, r *http.Request) {
+	index := getOrCreateTagIndex()
+	n := index.Tags.Len()
+	tags := make([]Tag, n)
+	for i, t := range index.Tags {
+		var ltag Tag
+		t.Get(&ltag)
+		tags[i] = ltag
+	}
+
+	ir := TagIndexResponse{
+	Tags: tags,
+	}
+	pattern := filepath.Join("templates", "tags.html")
 	tmpl := template.Must(template.ParseGlob(pattern))
 	tmpl.Execute(w, ir)
 }
