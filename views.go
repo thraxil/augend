@@ -10,7 +10,8 @@ import (
 )
 
 type IndexResponse struct {
-	Facts []Fact
+	Facts    []Fact
+	Username string
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,21 +31,30 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	ir := IndexResponse{
 		Facts: facts,
 	}
+	sess, _ := store.Get(r, "augend")
+	username, found := sess.Values["user"]
+	if found && username != "" {
+		ir.Username = username.(string)
+	}
 	pattern := filepath.Join("templates", "index.html")
 	tmpl := template.Must(template.ParseGlob(pattern))
 	tmpl.Execute(w, ir)
 }
 
 type TagIndexResponse struct {
-	Tags []Tag
+	Tags     []Tag
+	Username string
 }
 
 type TagResponse struct {
-	Tag Tag
+	Tag      Tag
+	Username string
 }
 
 func tagHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.String(), "/")
+	sess, _ := store.Get(r, "augend")
+	username, found := sess.Values["user"]
 	if len(parts) < 3 || parts[2] == "" {
 		index := getOrCreateTagIndex()
 		n := index.Tags.Len()
@@ -58,6 +68,9 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 		ir := TagIndexResponse{
 			Tags: tags,
 		}
+		if found && username != "" {
+			ir.Username = username.(string)
+		}
 		pattern := filepath.Join("templates", "tags.html")
 		tmpl := template.Must(template.ParseGlob(pattern))
 		tmpl.Execute(w, ir)
@@ -68,6 +81,9 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 	var tag Tag
 	riak.LoadModel(id, &tag)
 	tr := TagResponse{Tag: tag}
+	if found && username != "" {
+		tr.Username = username.(string)
+	}
 	pattern := filepath.Join("templates", "tag.html")
 	tmpl := template.Must(template.ParseGlob(pattern))
 	tmpl.Execute(w, tr)
@@ -97,6 +113,12 @@ func factHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addHandler(w http.ResponseWriter, r *http.Request) {
+	sess, _ := store.Get(r, "augend")
+	username, found := sess.Values["user"]
+	if !found || username == "" {
+		http.Redirect(w, r, "/login/", http.StatusFound)
+		return
+	}
 	if r.Method == "POST" {
 		title := r.PostFormValue("title")
 		details := r.PostFormValue("details")
@@ -128,10 +150,11 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "passwords don't match")
 		return
 	}
-	NewUser(username, password)
+	user := NewUser(username, password)
 
-	//store the user id in the values and redirect to index
-	//	ctx.Session.Values["user"] = u.ID
+	sess, _ := store.Get(r, "augend")
+	sess.Values["user"] = user.Username
+	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
@@ -159,5 +182,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// store userid in session
+	sess, _ := store.Get(r, "augend")
+	sess.Values["user"] = user.Username
+	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/sessions"
 	"github.com/tpjg/goriakpbc"
 	"net/http"
 )
+
+var store sessions.Store
 
 func main() {
 	var riak_host = "localhost:10017"
@@ -13,6 +16,8 @@ func main() {
 		fmt.Println("error:", err)
 		return
 	}
+
+	store = sessions.NewCookieStore([]byte("secret-key-change-me-in-prod"))
 
 	err = ensureBuckets()
 	if err != nil {

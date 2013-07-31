@@ -9,5 +9,4 @@
 * markdown for details
 * bulk import script
 * users
-** sessions
 ** logout
