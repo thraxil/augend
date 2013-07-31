@@ -65,6 +65,16 @@ func ensureBuckets() error {
 		fmt.Println("could not get/create fact bucket")
 		return err
 	}
+	_, err = riak.NewBucket("test.augend.tag")
+	if err != nil {
+		fmt.Println("could not get/create tag bucket")
+		return err
+	}
+	_, err = riak.NewBucket("test.augend.user")
+	if err != nil {
+		fmt.Println("could not get/create user bucket")
+		return err
+	}
 	_, err = riak.NewBucket("test.augend.index")
 	if err != nil {
 		fmt.Println("could not get/create fact bucket")

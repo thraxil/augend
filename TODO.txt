@@ -1,5 +1,4 @@
 * tags
-** tag page
 ** normalize tag names
 *** remove non-URL safe chars
 ** sort tags index
@@ -9,3 +8,6 @@
 * bookmarklet page
 * markdown for details
 * bulk import script
+* users
+** sessions
+** logout

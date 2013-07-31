@@ -24,6 +24,8 @@ func main() {
 	http.HandleFunc("/fact/", factHandler)
 	http.HandleFunc("/tag/", tagHandler)
 	http.HandleFunc("/add/", addHandler)
+	http.HandleFunc("/register/", registerHandler)
+	http.HandleFunc("/login/", loginHandler)
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir("media"))))
 	http.ListenAndServe(":9999", nil)

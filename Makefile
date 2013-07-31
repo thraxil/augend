@@ -15,3 +15,4 @@ fmt:
 install_deps:
 	go get github.com/nu7hatch/gouuid
 	go get github.com/tpjg/goriakpbc
+	go get code.google.com/p/go.crypto/bcrypt

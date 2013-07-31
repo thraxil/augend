@@ -111,3 +111,53 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, nil)
 	}
 }
+
+func registerForm(w http.ResponseWriter, req *http.Request) {
+	pattern := filepath.Join("templates", "register.html")
+	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl.Execute(w, nil)
+}
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		registerForm(w, r)
+		return
+	}
+	username, password, pass2 := r.FormValue("username"), r.FormValue("password"), r.FormValue("pass2")
+	if password != pass2 {
+		fmt.Fprintf(w, "passwords don't match")
+		return
+	}
+	NewUser(username, password)
+
+	//store the user id in the values and redirect to index
+	//	ctx.Session.Values["user"] = u.ID
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func loginForm(w http.ResponseWriter, req *http.Request) {
+	pattern := filepath.Join("templates", "login.html")
+	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl.Execute(w, nil)
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		loginForm(w, r)
+		return
+	}
+	username, password := r.FormValue("username"), r.FormValue("password")
+	var user User
+	err := riak.LoadModel(username, &user)
+	if err != nil {
+		fmt.Println("couldn't load user:", err)
+		fmt.Fprintf(w, "user not found")
+		return
+	}
+	if !user.CheckPassword(password) {
+		fmt.Fprintf(w, "login failed")
+		return
+	}
+	// store userid in session
+	http.Redirect(w, r, "/", http.StatusFound)
+}

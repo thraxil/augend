@@ -31,7 +31,7 @@ func (t Tag) ListFacts() []Fact {
 }
 
 func normalizeTag(t string) string {
-	t = strings.Trim(t, " \n\t,-\'\"")
+	t = strings.Trim(t, " \n\t,-")
 	t = strings.ToLower(t)
 	return t
 }
