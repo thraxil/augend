@@ -12,4 +12,3 @@
 * bookmarklet page
 * markdown for details
 * bulk import script
-* up to github

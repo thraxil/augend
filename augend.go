@@ -57,11 +57,24 @@ type FactIndex struct {
 	riak.Model `riak:"test.augend.index"`
 }
 
+func ensureBuckets() error {
+	_, err := riak.NewBucket("test.augend.fact")
+	if err != nil {
+		fmt.Println("could not get/create fact bucket")
+		return err
+	}
+	_, err = riak.NewBucket("test.augend.index")
+	if err != nil {
+		fmt.Println("could not get/create fact bucket")
+		return err
+	}
+	return nil
+}
+
 func getOrCreateTag(t string) *Tag {
 	var tag Tag
 	err := riak.LoadModel(t, &tag)
 	if err != nil {
-		fmt.Println(err)
 		fmt.Println("creating new tag")
 		var ntag Tag
 		err := riak.NewModel(t, &ntag)
@@ -88,14 +101,21 @@ func getOrCreateFactIndex() *FactIndex {
 	var index FactIndex
 	err := riak.LoadModel("fact-index", &index)
 	if err != nil {
-		fmt.Println(err)
 		fmt.Println("creating new fact index")
-		err = riak.NewModel("fact-index", &index)
-		if err != nil {
-			return nil
-		}
-		return &index
+		return createFactIndex()
 	}
+	return &index
+}
+
+func createFactIndex() *FactIndex {
+	var index FactIndex
+	err := riak.NewModel("fact-index", &index)
+	if err != nil {
+		fmt.Println("could not create new fact index")
+		fmt.Println(err)
+		return nil
+	}
+	index.SaveAs("fact-index")
 	return &index
 }
 
@@ -136,6 +156,11 @@ func main () {
 		return
 	}
 
+	err = ensureBuckets()
+	if err != nil {
+		fmt.Println("problem creating buckets. can't start")
+		return
+	}
 //	fmt.Println(index.Facts.Len())
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/fact/", factHandler)
@@ -152,6 +177,10 @@ type IndexResponse struct {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	index := getOrCreateFactIndex()
+	if index == nil {
+		fmt.Fprintf(w, "could not retrieve or create main fact index")
+		return
+	}
 	n := index.Facts.Len()
 	facts := make([]Fact, n)
 	for i, f := range index.Facts {
@@ -280,7 +309,6 @@ func getOrCreateTagIndex() *TagIndex {
 	var index TagIndex
 	err := riak.LoadModel("tag-index", &index)
 	if err != nil {
-		fmt.Println(err)
 		fmt.Println("creating new tag index")
 		return createTagIndex()
 	}
@@ -295,5 +323,6 @@ func createTagIndex() *TagIndex {
 		fmt.Println(err)
 		return nil
 	}
+	nindex.SaveAs("tag-index")
 	return &nindex
 }
