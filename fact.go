@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/nu7hatch/gouuid"
 	"github.com/tpjg/goriakpbc"
+	"strings"
+	"time"
 )
 
 type Fact struct {
@@ -48,4 +51,35 @@ func (f Fact) ListTags() []Tag {
 
 func (f Fact) HasSource() bool {
 	return f.SourceName != ""
+}
+
+func NewFact(title, details, source_name, source_url, tags string) *Fact {
+	var fact Fact
+	u4, err := uuid.NewV4()
+	if err != nil {
+		fmt.Println("error:", err)
+		return nil
+	}
+
+	err = riak.NewModel(u4.String(), &fact)
+	fact.Title = title
+	fact.Details = details
+	fact.SourceName = source_name
+	fact.SourceUrl = source_url
+	t := time.Now()
+	fact.Added = t.Format(time.RFC3339)
+
+	fact.SaveAs(u4.String())
+
+	index := getOrCreateFactIndex()
+	if index == nil {
+		fmt.Println("unable to get/create fact index")
+		return nil
+	}
+	index.Facts.Add(&fact)
+	index.SaveAs("fact-index")
+	for _, t := range strings.Split(tags, ",") {
+		fact.AddTag(t)
+	}
+	return &fact
 }

@@ -1,6 +1,6 @@
 all: augend
 
-augend: augend.go fact.go
+augend: augend.go fact.go views.go tag.go indices.go
 	go build .
 
 clean:
