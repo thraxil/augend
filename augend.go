@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/add/", addHandler)
 	http.HandleFunc("/register/", registerHandler)
 	http.HandleFunc("/login/", loginHandler)
+	http.HandleFunc("/logout/", logoutHandler)
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir("media"))))
 	http.ListenAndServe(":9999", nil)

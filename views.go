@@ -187,3 +187,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	sess, _ := store.Get(r, "augend")
+	delete(sess.Values, "user")
+	sess.Save(r, w)
+	http.Redirect(w, r, "/", http.StatusFound)
+}
