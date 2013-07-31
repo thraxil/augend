@@ -17,13 +17,13 @@
 {{ if .Details }}
   <div class="span6 details"><p>{{.Details}}</p></div>
 {{ end }}
-{{ if .SourceName }}
+{{ if .HasSource }}
   <div class="source"><i class="icon-bookmark"></i><b>Source</b>:
 <a href="{{.SourceUrl}}">{{.SourceName}}</a></div>
 {{ end }}
 
 {{if .HasTags }}
-<div>{{range .ListTags}}
+<div><b>Tags:</b>{{range .ListTags}}
 <a href="{{.Url}}">{{.Name}}</a>
 {{end}}</div>
 {{end}}

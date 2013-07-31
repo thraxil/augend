@@ -12,12 +12,12 @@ import (
 )
 
 type Fact struct {
-	Title string ""
-	Details string ""
+	Title      string ""
+	Details    string ""
 	SourceName string ""
-	SourceUrl string ""
-	Added string ""
-	Tags riak.Many
+	SourceUrl  string ""
+	Added      string ""
+	Tags       riak.Many
 	riak.Model `riak:"test.augend.fact"`
 }
 
@@ -38,11 +38,11 @@ func (f *Fact) AddTag(t string) {
 	tag.SaveAs(t)
 }
 
-func (f *Fact) HasTags() bool {
+func (f Fact) HasTags() bool {
 	return f.Tags.Len() > 0
 }
 
-func (f *Fact) ListTags() []Tag {
+func (f Fact) ListTags() []Tag {
 	tl := make([]Tag, f.Tags.Len())
 	for i, t := range f.Tags {
 		var ltag Tag
@@ -52,8 +52,12 @@ func (f *Fact) ListTags() []Tag {
 	return tl
 }
 
+func (f Fact) HasSource() bool {
+	return f.SourceName != ""
+}
+
 type FactIndex struct {
-	Facts riak.Many
+	Facts      riak.Many
 	riak.Model `riak:"test.augend.index"`
 }
 
@@ -76,25 +80,29 @@ func getOrCreateTag(t string) *Tag {
 	err := riak.LoadModel(t, &tag)
 	if err != nil {
 		fmt.Println("creating new tag")
-		var ntag Tag
-		err := riak.NewModel(t, &ntag)
-		if err != nil {
-			fmt.Println("could not create new tag")
-			fmt.Println(err)
-			return nil
-		}
-		ntag.Name = t
-		ntag.SaveAs(t)
-		tag_index := getOrCreateTagIndex()
-		if tag_index == nil {
-			fmt.Println("no tag index!")
-			return nil
-		}
-		tag_index.Tags.Add(&ntag)
-		tag_index.SaveAs("tag-index")
-		return &ntag
+		return createTag(t)
 	}
 	return &tag
+}
+
+func createTag(t string) *Tag {
+	var ntag Tag
+	err := riak.NewModel(t, &ntag)
+	if err != nil {
+		fmt.Println("could not create new tag")
+		fmt.Println(err)
+		return nil
+	}
+	ntag.Name = t
+	ntag.SaveAs(t)
+	tag_index := getOrCreateTagIndex()
+	if tag_index == nil {
+		fmt.Println("no tag index!")
+		return nil
+	}
+	tag_index.Tags.Add(&ntag)
+	tag_index.SaveAs("tag-index")
+	return &ntag
 }
 
 func getOrCreateFactIndex() *FactIndex {
@@ -130,6 +138,8 @@ func NewFact(title, details, source_name, source_url, tags string) *Fact {
 	err = riak.NewModel(u4.String(), &fact)
 	fact.Title = title
 	fact.Details = details
+	fact.SourceName = source_name
+	fact.SourceUrl = source_url
 	t := time.Now()
 	fact.Added = t.Format(time.RFC3339)
 
@@ -148,7 +158,7 @@ func NewFact(title, details, source_name, source_url, tags string) *Fact {
 	return &fact
 }
 
-func main () {
+func main() {
 	var riak_host = "localhost:10017"
 	err := riak.ConnectClient(riak_host)
 	if err != nil {
@@ -161,7 +171,7 @@ func main () {
 		fmt.Println("problem creating buckets. can't start")
 		return
 	}
-//	fmt.Println(index.Facts.Len())
+	//	fmt.Println(index.Facts.Len())
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/fact/", factHandler)
 	http.HandleFunc("/tag/", tagHandler)
@@ -186,11 +196,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	for i, f := range index.Facts {
 		var lfact Fact
 		f.Get(&lfact)
-		facts[n - 1 - i] = lfact
+		facts[n-1-i] = lfact
 	}
 
 	ir := IndexResponse{
-	Facts: facts,
+		Facts: facts,
 	}
 	pattern := filepath.Join("templates", "index.html")
 	tmpl := template.Must(template.ParseGlob(pattern))
@@ -218,7 +228,7 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		ir := TagIndexResponse{
-		Tags: tags,
+			Tags: tags,
 		}
 		pattern := filepath.Join("templates", "tags.html")
 		tmpl := template.Must(template.ParseGlob(pattern))
@@ -275,8 +285,8 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Tag struct {
-	Name string
-	Facts riak.Many
+	Name       string
+	Facts      riak.Many
 	riak.Model `riak:"test.augend.tag"`
 }
 
@@ -301,7 +311,7 @@ func (t *Tag) ListFacts() []Fact {
 }
 
 type TagIndex struct {
-	Tags riak.Many
+	Tags       riak.Many
 	riak.Model `riak:"test.augend.index"`
 }
 
