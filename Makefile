@@ -1,6 +1,6 @@
 all: augend
 
-augend: augend.go
+augend: augend.go fact.go
 	go build .
 
 clean:
