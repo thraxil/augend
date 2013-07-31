@@ -3,6 +3,9 @@ all: augend
 augend: augend.go fact.go views.go tag.go indices.go
 	go build .
 
+run: augend
+	./augend
+
 clean:
 	rm -f augend
 

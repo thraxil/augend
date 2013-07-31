@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/tpjg/goriakpbc"
+	"strings"
 )
 
 type Tag struct {
@@ -21,7 +22,6 @@ func (t Tag) Url() string {
 
 func (t Tag) ListFacts() []Fact {
 	fl := make([]Fact, t.Facts.Len())
-	fmt.Println(t.Facts.Len())
 	for i, f := range t.Facts {
 		var lfact Fact
 		f.Get(&lfact)
@@ -30,7 +30,17 @@ func (t Tag) ListFacts() []Fact {
 	return fl
 }
 
+func normalizeTag(t string) string {
+	t = strings.Trim(t, " \n\t,-\'\"")
+	t = strings.ToLower(t)
+	return t
+}
+
 func getOrCreateTag(t string) *Tag {
+	t = normalizeTag(t)
+	if t == "" {
+		return nil
+	}
 	var tag Tag
 	err := riak.LoadModel(t, &tag)
 	if err != nil {

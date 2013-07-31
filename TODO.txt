@@ -1,8 +1,6 @@
 * tags
 ** tag page
 ** normalize tag names
-*** strip whitespace
-*** lowercase
 *** remove non-URL safe chars
 ** sort tags index
 ** autocomplete tags on add form

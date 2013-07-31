@@ -29,10 +29,13 @@ func (f *Fact) Resolve(count int) (err error) {
 
 func (f *Fact) AddTag(t string) {
 	tag := getOrCreateTag(t)
+	if tag == nil {
+		return
+	}
 	f.Tags.Add(tag)
 	f.SaveAs(f.Key())
 	tag.Facts.Add(f)
-	tag.SaveAs(t)
+	tag.SaveAs(tag.Name)
 }
 
 func (f Fact) HasTags() bool {
