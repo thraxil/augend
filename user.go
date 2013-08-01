@@ -13,6 +13,11 @@ type User struct {
 	riak.Model `riak:"test.augend.user"`
 }
 
+func (u *User) Resolve(count int) (err error) {
+	fmt.Println("resolve user")
+	return nil
+}
+
 func NewUser(username, password string) *User {
 	var user User
 	err := riak.NewModel(username, &user)

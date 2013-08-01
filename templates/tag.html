@@ -1,7 +1,19 @@
 {{define "title"}}Tag: {{.Tag.Name}}{{end}}
 {{define "content"}}
-<h1>{{.Tag.Name}}</h1>
+<h1>Tag: {{.Tag.Name}}</h1>
 {{range .Tag.ListFacts}}
-<div><a href="{{.Url}}">{{.Title}}</a></div>
+<div class="fact row" id="fact-{{.Key}}">
+  <div class="span6"><h2>{{.Title}}</h2></div>
+{{ if .Details }}
+  <div class="span6 details"><p>{{.Details}}</p></div>
+{{ end }}
+{{ if .HasSource }}
+  <div class="source"><i class="icon-bookmark"></i><b>Source</b>:
+<a href="{{.SourceUrl}}">{{.SourceName}}</a></div>
+{{ end }}
+
+<div class="added"><i class="icon-chevron-right">
+</i>added <a href="{{.Url}}">{{.Added}}</a> by {{.GetUser.Username}}</div>
+</div>
 {{end}}
 {{end}}

@@ -132,7 +132,9 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		source_name := r.PostFormValue("source_name")
 		source_url := r.PostFormValue("source_url")
 		tags := r.PostFormValue("tags")
-		NewFact(title, details, source_name, source_url, tags)
+		var user User
+		riak.LoadModel(username.(string), &user)
+		NewFact(title, details, source_name, source_url, tags, user)
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		tmpl := getTemplate("add.html")

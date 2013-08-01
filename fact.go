@@ -14,6 +14,7 @@ type Fact struct {
 	SourceName string ""
 	SourceUrl  string ""
 	Added      string ""
+	User       riak.One
 	Tags       riak.Many
 	riak.Model `riak:"test.augend.fact"`
 }
@@ -56,7 +57,13 @@ func (f Fact) HasSource() bool {
 	return f.SourceName != ""
 }
 
-func NewFact(title, details, source_name, source_url, tags string) *Fact {
+func (f Fact) GetUser() User {
+	var user User
+	f.User.Get(&user)
+	return user
+}
+
+func NewFact(title, details, source_name, source_url, tags string, user User) *Fact {
 	var fact Fact
 	u4, err := uuid.NewV4()
 	if err != nil {
@@ -69,6 +76,7 @@ func NewFact(title, details, source_name, source_url, tags string) *Fact {
 	fact.Details = details
 	fact.SourceName = source_name
 	fact.SourceUrl = source_url
+	fact.User.Set(&user)
 	t := time.Now()
 	fact.Added = t.Format(time.RFC3339)
 
