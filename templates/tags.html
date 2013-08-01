@@ -1,27 +1,9 @@
-<html><head><title>Tags</title></head>
-<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
-<body>
-<div class="navbar">
-  <a class="navbar-brand active" href="/">Augend</a>
-  <ul class="nav navbar-nav">
-    <li class="active"><a href="/tag/" class="active">Tags</a></li>
-
-{{if .Username}}
-    <li><a href="/add/">Add</a></li>
-    <li><a href="/logout/">logout</a></li>
-{{else}}
-		<li><a href="/register/">register</a></li>
-		<li><a href="/login/">login</a></li>
-{{end}}
-  </ul>
-</div>
-
-<div class="container">
+{{define "title"}}Tags{{end}}
+{{define "content"}}
 {{range .Tags}}
 
 <div class="fact row" id="tag-{{.Key}}">
   <div class="span6"><h2><a href="{{.Url}}">{{.Name}}</a></h2></div>
 </div>
 {{end}}
-</div>
-</body></html>
+{{end}}

@@ -1,15 +1,7 @@
-<html><head><title>Fact: {{.Fact.Title}}</title></head>
-<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
-<body>
-<div class="navbar">
-  <a class="navbar-brand" href="/">Augend</a>
-  <ul class="nav navbar-nav">
-    <li><a href="/tag/">Tags</a></li>
-    <li><a href="/add/">Add</a></li>
-  </ul>
-</div>
+{{define "title"}}Fact: {{.Fact.Title}}{{end}}
 
-<div class="container">
+{{define "content"}}
+fact
 <h1>{{.Fact.Title}}</h1>
 <p>{{.Fact.Details}}</p>
 {{ if .Fact.HasSource }}
@@ -24,6 +16,4 @@
 <a href="{{.Url}}">{{.Name}}</a>
 {{end}}</div>
 {{end}}
-
-</div>
-</body></html>
+{{end}}

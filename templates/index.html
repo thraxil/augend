@@ -1,22 +1,7 @@
-<html><head><title>Facts</title></head>
-<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
-<body>
-<div class="navbar">
-  <a class="navbar-brand active" href="/">Augend</a>
-  <ul class="nav navbar-nav">
-    <li><a href="/tag/">Tags</a></li>
+{{ define "title" }}Facts{{ end }}
 
-{{if .Username}}
-    <li><a href="/add/">Add</a></li>
-    <li><a href="/logout/">logout</a></li>
-{{else}}
-		<li><a href="/register/">register</a></li>
-		<li><a href="/login/">login</a></li>
-{{end}}
-  </ul>
-</div>
 
-<div class="container">
+{{ define "content" }}
 {{range .Facts}}
 
 <div class="fact row" id="fact-{{.Key}}">
@@ -39,5 +24,5 @@
 </i>added <a href="{{.Url}}">{{.Added}}</a></div>
 </div>
 {{end}}
-</div>
-</body></html>
+{{end}}
+

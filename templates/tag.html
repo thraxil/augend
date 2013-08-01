@@ -1,18 +1,7 @@
-<html><head><title>Tag: {{.Tag.Name}}</title></head>
-<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
-<body>
-<div class="navbar">
-  <a class="navbar-brand active" href="/">Augend</a>
-  <ul class="nav navbar-nav">
-    <li><a href="/tag/" class="active">Tags</a></li>
-    <li><a href="/add/">Add</a></li>
-  </ul>
-</div>
-
-<div class="container">
+{{define "title"}}Tag: {{.Tag.Name}}{{end}}
+{{define "content"}}
 <h1>{{.Tag.Name}}</h1>
 {{range .Tag.ListFacts}}
 <div><a href="{{.Url}}">{{.Title}}</a></div>
 {{end}}
-</div>
-</body></html>
+{{end}}

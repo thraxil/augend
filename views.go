@@ -36,8 +36,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if found && username != "" {
 		ir.Username = username.(string)
 	}
-	pattern := filepath.Join("templates", "index.html")
-	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl := getTemplate("index.html")
 	tmpl.Execute(w, ir)
 }
 
@@ -71,8 +70,7 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 		if found && username != "" {
 			ir.Username = username.(string)
 		}
-		pattern := filepath.Join("templates", "tags.html")
-		tmpl := template.Must(template.ParseGlob(pattern))
+		tmpl := getTemplate("tags.html")
 		tmpl.Execute(w, ir)
 		return
 	}
@@ -84,16 +82,18 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 	if found && username != "" {
 		tr.Username = username.(string)
 	}
-	pattern := filepath.Join("templates", "tag.html")
-	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl := getTemplate("tag.html")
 	tmpl.Execute(w, tr)
 }
 
 type FactResponse struct {
-	Fact Fact
+	Fact     Fact
+	Username string
 }
 
 func factHandler(w http.ResponseWriter, r *http.Request) {
+	sess, _ := store.Get(r, "augend")
+	username, found := sess.Values["user"]
 	parts := strings.Split(r.URL.String(), "/")
 	if len(parts) < 3 {
 		http.Error(w, "bad request", 400)
@@ -107,9 +107,16 @@ func factHandler(w http.ResponseWriter, r *http.Request) {
 	var fact Fact
 	riak.LoadModel(id, &fact)
 	fr := FactResponse{Fact: fact}
-	pattern := filepath.Join("templates", "fact.html")
-	tmpl := template.Must(template.ParseGlob(pattern))
+	if found && username != "" {
+		fr.Username = username.(string)
+	}
+
+	tmpl := getTemplate("fact.html")
 	tmpl.Execute(w, fr)
+}
+
+type AddResponse struct {
+	Username string
 }
 
 func addHandler(w http.ResponseWriter, r *http.Request) {
@@ -128,9 +135,9 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		NewFact(title, details, source_name, source_url, tags)
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		pattern := filepath.Join("templates", "add.html")
-		tmpl := template.Must(template.ParseGlob(pattern))
-		tmpl.Execute(w, nil)
+		tmpl := getTemplate("add.html")
+		ctx := AddResponse{Username: username.(string)}
+		tmpl.Execute(w, ctx)
 	}
 }
 
@@ -159,8 +166,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginForm(w http.ResponseWriter, req *http.Request) {
-	pattern := filepath.Join("templates", "login.html")
-	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl := getTemplate("login.html")
 	tmpl.Execute(w, nil)
 }
 
@@ -193,4 +199,12 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	delete(sess.Values, "user")
 	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func getTemplate(filename string) *template.Template {
+	var t = template.New("base.html")
+	return template.Must(t.ParseFiles(
+		filepath.Join("templates", "base.html"),
+		filepath.Join("templates", filename),
+	))
 }

@@ -1,19 +1,6 @@
-<html>
-	<head>
-		<title>Add Fact</title>
-		<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
-	</head>
-	<body>
-<div class="navbar">
-  <a class="navbar-brand" href="/">Augend</a>
-  <ul class="nav navbar-nav">
-		<li><a href="/tag/">Tags</a></li>
-    <li class="active"><a href="/add/">Add</a></li>
-    <li><a href="/logout/">logout</a></li>
-  </ul>
-</div>
+{{define "title"}}Add Fact{{end}}
 
-<div class="container">
+{{define "content"}}
 <form action="." method="post">
 	<fieldset>
 		<legend>Add Fact</legend>
@@ -45,6 +32,4 @@
 		<input type="submit" value="add fact" class="btn btn-default" />
 	</fieldset>
 </form>
-</div>
-	</body>
-</html>
+{{end}}
