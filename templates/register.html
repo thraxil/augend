@@ -1,16 +1,5 @@
-<html><head><title>Facts</title></head>
-<link rel="stylesheet" type="text/css" href="/media/bootstrap.min.css"/>
-<body>
-<div class="navbar">
-  <a class="navbar-brand active" href="/">Augend</a>
-  <ul class="nav navbar-nav">
-    <li><a href="/tag/">Tags</a></li>
-    <li><a href="/add/">Add</a></li>
-  </ul>
-</div>
-
-<div class="container">
-
+{{define "title"}}Register{{end}}
+{{define "content"}}
 <form action="." method="post">
 	<fieldset>
 		<legend>Register</legend>
@@ -29,7 +18,4 @@
 		<input type="submit" value="register" class="btn btn-default" />
 	</fieldset>
 </form>
-
-</div>
-</body>
-</html>
+{{end}}

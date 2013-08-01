@@ -9,9 +9,13 @@ import (
 	"strings"
 )
 
-type IndexResponse struct {
-	Facts    []Fact
+type SiteResponse struct {
 	Username string
+}
+
+type IndexResponse struct {
+	Facts []Fact
+	SiteResponse
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,13 +45,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type TagIndexResponse struct {
-	Tags     []Tag
-	Username string
+	Tags []Tag
+	SiteResponse
 }
 
 type TagResponse struct {
-	Tag      Tag
-	Username string
+	Tag Tag
+	SiteResponse
 }
 
 func tagHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,8 +91,8 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type FactResponse struct {
-	Fact     Fact
-	Username string
+	Fact Fact
+	SiteResponse
 }
 
 func factHandler(w http.ResponseWriter, r *http.Request) {
@@ -115,10 +119,6 @@ func factHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, fr)
 }
 
-type AddResponse struct {
-	Username string
-}
-
 func addHandler(w http.ResponseWriter, r *http.Request) {
 	sess, _ := store.Get(r, "augend")
 	username, found := sess.Values["user"]
@@ -136,14 +136,13 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		tmpl := getTemplate("add.html")
-		ctx := AddResponse{Username: username.(string)}
+		ctx := SiteResponse{Username: username.(string)}
 		tmpl.Execute(w, ctx)
 	}
 }
 
 func registerForm(w http.ResponseWriter, req *http.Request) {
-	pattern := filepath.Join("templates", "register.html")
-	tmpl := template.Must(template.ParseGlob(pattern))
+	tmpl := getTemplate("register.html")
 	tmpl.Execute(w, nil)
 }
 
