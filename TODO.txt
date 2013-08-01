@@ -4,16 +4,7 @@
 ** sort tags index
 ** autocomplete tags on add form
 * pagination
-* config file
-** media path
-** template path
-** port
-** riak connection info
-** session secret key
 * bookmarklet page
 * markdown for details
 * bulk import script
-* users
-** associate user with each fact
-** display user on fact page
 * change bucket names for 1.0 release

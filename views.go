@@ -205,7 +205,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 func getTemplate(filename string) *template.Template {
 	var t = template.New("base.html")
 	return template.Must(t.ParseFiles(
-		filepath.Join("templates", "base.html"),
-		filepath.Join("templates", filename),
+		filepath.Join(template_dir, "base.html"),
+		filepath.Join(template_dir, filename),
 	))
 }
