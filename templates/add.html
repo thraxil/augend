@@ -4,30 +4,29 @@
 <form action="." method="post">
 	<fieldset>
 		<legend>Add Fact</legend>
-		<div class="form-group">
-			<label for="title">Title</label>
-			<input type="text" name="title" class="form-control" id="title" placeholder="Enter title">
-    </div>
-		<div class="form-group">
-			<label for="details">Details</label>
-			<input type="text" name="details" class="form-control" id="details" placeholder="Enter details">
-    </div>
-		<div class="form-group">
-			<label for="source_name">Source Name</label>
-			<input type="text" class="form-control" id="source_name" name="source_name"
-						 placeholder="Enter source name">
-    </div>
-		<div class="form-group">
-			<label for="source_url">Source URL</label>
-			<input type="text" class="form-control" id="source_url"
-						 name="source_url"
-						 placeholder="Enter source URL">
-    </div>
-		<div class="form-group">
-			<label for="tags">Tags</label>
-			<input type="text" class="form-control" id="tags"
+
+		<div class="row">
+			<div class="col-lg-3">
+			<input type="text" name="title" class="form-control input-small"
+						 id="title" placeholder="Title">
+			</div>
+			<div class="col-lg-3">
+			<input type="text" name="details" class="form-control  input-small"
+						 id="details" placeholder="Details">
+			</div>
+			<div class="col-lg-2">
+			<input type="text" class="form-control  input-small" id="source_name"
+						 name="source_name" placeholder="Source Name">
+			</div>
+			<div class="col-lg-2">
+			<input type="text" class="form-control  input-small" id="source_url"
+						 name="source_url" placeholder="Source URL">
+			</div>
+			<div class="col-lg-2">
+			<input type="text" class="form-control input-small" id="tags"
 						 name="tags" placeholder="Tags">
-    </div>
+			</div>
+		</div>
 
 		<input type="submit" value="add fact" class="btn btn-default" />
 	</fieldset>
