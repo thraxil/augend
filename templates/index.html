@@ -4,24 +4,35 @@
 {{ define "content" }}
 {{range .Facts}}
 
-<div class="fact row" id="fact-{{.Key}}">
-  <div class="span6"><h2>{{.Title}}</h2></div>
-{{ if .Details }}
-  <div class="span6 details"><p>{{.Details}}</p></div>
-{{ end }}
-{{ if .HasSource }}
-  <div class="source"><i class="icon-bookmark"></i><b>Source</b>:
-<a href="{{.SourceUrl}}">{{.SourceName}}</a></div>
-{{ end }}
+<div class="row fact-row" id="fact-{{.Key}}">
+	<div class="col-lg-4"><b>{{.Title}}</b></div>
 
-{{if .HasTags }}
-<div><b>Tags:</b>{{range .ListTags}}
-<a href="{{.Url}}">{{.Name}}</a>
-{{end}}</div>
-{{end}}
+	<div class="col-lg-8">
+		{{ if .Details }}
+		<div class="span6 details"><p>{{.Details}}</p></div>
+		{{ end }}
 
-<div class="added"><i class="icon-chevron-right">
-</i>added <a href="{{.Url}}">{{.Added}}</a> by {{.GetUser.Username}}</div>
+		{{ if .HasSource }}
+		<div class="source">
+			<i class="icon-bookmark"></i><b>Source</b>:
+			<a href="{{.SourceUrl}}">{{.SourceName}}</a>
+		</div>
+		{{ end }}
+
+		{{if .HasTags }}
+		<div>
+			<b>Tags:</b>
+			{{range .ListTags}}
+			<a href="{{.Url}}">{{.Name}}</a>
+			{{end}}
+		</div>
+		{{end}}
+
+		<div class="added">
+			<span class="glyphicon glyphicon-chevron-right"></span>
+			added <a href="{{.Url}}">{{.Added}}</a> by {{.GetUser.Username}}
+		</div>
+	</div>
 </div>
 {{end}}
 {{end}}

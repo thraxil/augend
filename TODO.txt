@@ -8,3 +8,5 @@
 * markdown for details
 * bulk import script
 * change bucket names for 1.0 release
+* resolve siblings
+* search
