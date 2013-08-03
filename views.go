@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/tpjg/goriakpbc"
 	"html/template"
-	"math"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -17,15 +15,23 @@ type SiteResponse struct {
 
 type IndexResponse struct {
 	Facts []Fact
+	Page  Page
 	SiteResponse
 }
 
-func minint(a, b int) int {
-	return int(math.Min(float64(a), float64(b)))
+func (f FactIndex) TotalItems() int {
+	return f.Facts.Len()
 }
 
-func maxint(a, b int) int {
-	return int(math.Max(float64(a), float64(b)))
+func (f FactIndex) ItemRange(offset, count int) []Fact {
+	facts_on_page := minint(count, (f.TotalItems() - offset))
+	facts := make([]Fact, facts_on_page)
+	for i := 0; i < facts_on_page; i++ {
+		var lfact Fact
+		f.Facts[offset+i].Get(&lfact)
+		facts[facts_on_page-1-i] = lfact
+	}
+	return facts
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,28 +40,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "could not retrieve or create main fact index")
 		return
 	}
-	offset,err := strconv.Atoi(r.FormValue("offset"))
-	if err != nil {
-		// can't parse as int? just default to zero
-		offset = 0
-	}
-	fmt.Println(offset)
-	facts_per_page := 3
-	total_facts := index.Facts.Len()
-
-	// bound the offset to something reasonable
-	offset = maxint(offset, 0)
-	offset = minint(offset, total_facts)
-	fmt.Println(offset)
-	facts_on_page := minint(facts_per_page, (total_facts - offset))
-	facts := make([]Fact, facts_on_page)
-	for i := 0; i < facts_on_page; i++ {
-		var lfact Fact
-		index.Facts[offset + i].Get(&lfact)
-		facts[facts_on_page-1-i] = lfact
-	}
-
+	var p = Paginator{ItemList: index, PerPage: 20}
+	page := p.GetPage(r)
+	facts := page.Items()
 	ir := IndexResponse{
+		Page:  page,
 		Facts: facts,
 	}
 	sess, _ := store.Get(r, "augend")

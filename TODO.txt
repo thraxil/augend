@@ -3,7 +3,6 @@
 *** remove non-URL safe chars
 ** sort tags index
 ** autocomplete tags on add form
-* pagination
 * bookmarklet page
 * markdown for details
 * bulk import script

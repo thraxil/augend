@@ -2,6 +2,19 @@
 
 
 {{ define "content" }}
+
+
+<ul class="pagination">
+{{if .Page.HasPrev}}
+  <li><a href="/?page={{.Page.PrevPage}}">&laquo;</a></li>
+{{end}}
+  <li class="active"><span>{{.Page.PageNumber}}</span></li>
+{{if .Page.HasNext}}
+  <li><a href="/?page={{.Page.NextPage}}">&raquo;</a></li>
+{{end}}
+</ul>
+
+
 {{range .Facts}}
 
 <div class="row fact-row" id="fact-{{.Key}}">
@@ -35,5 +48,16 @@
 	</div>
 </div>
 {{end}}
+
+<ul class="pagination">
+{{if .Page.HasPrev}}
+  <li><a href="/?page={{.Page.PrevPage}}">&laquo;</a></li>
+{{end}}
+  <li class="active"><span>{{.Page.PageNumber}}</span></li>
+{{if .Page.HasNext}}
+  <li><a href="/?page={{.Page.NextPage}}">&raquo;</a></li>
+{{end}}
+</ul>
+
 {{end}}
 
