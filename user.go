@@ -10,7 +10,7 @@ type User struct {
 	Username   string
 	Password   []byte
 	Facts      riak.Many
-	riak.Model `riak:"test.augend.user"`
+	riak.Model `riak:"augend.user"`
 }
 
 func (u *User) Resolve(count int) (err error) {

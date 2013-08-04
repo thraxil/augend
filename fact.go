@@ -18,7 +18,7 @@ type Fact struct {
 	Added      string ""
 	User       riak.One
 	Tags       riak.Many
-	riak.Model `riak:"test.augend.fact"`
+	riak.Model `riak:"augend.fact"`
 }
 
 func (f *Fact) Url() string {

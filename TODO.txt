@@ -1,7 +1,6 @@
 * normalize tag names
 ** remove non-URL safe chars
 * autocomplete tags on add form
-* change bucket names for 1.0 release
 * resolve siblings
 * search
 * atom feed

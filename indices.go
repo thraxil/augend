@@ -7,7 +7,7 @@ import (
 
 type FactIndex struct {
 	Facts      riak.Many
-	riak.Model `riak:"test.augend.index"`
+	riak.Model `riak:"augend.index"`
 }
 
 func getOrCreateFactIndex() *FactIndex {
@@ -34,7 +34,7 @@ func createFactIndex() *FactIndex {
 
 type TagIndex struct {
 	Tags       riak.Many
-	riak.Model `riak:"test.augend.index"`
+	riak.Model `riak:"augend.index"`
 }
 
 func getOrCreateTagIndex() *TagIndex {
@@ -60,22 +60,22 @@ func createTagIndex() *TagIndex {
 }
 
 func ensureBuckets() error {
-	_, err := riak.NewBucket("test.augend.fact")
+	_, err := riak.NewBucket("augend.fact")
 	if err != nil {
 		fmt.Println("could not get/create fact bucket")
 		return err
 	}
-	_, err = riak.NewBucket("test.augend.tag")
+	_, err = riak.NewBucket("augend.tag")
 	if err != nil {
 		fmt.Println("could not get/create tag bucket")
 		return err
 	}
-	_, err = riak.NewBucket("test.augend.user")
+	_, err = riak.NewBucket("augend.user")
 	if err != nil {
 		fmt.Println("could not get/create user bucket")
 		return err
 	}
-	_, err = riak.NewBucket("test.augend.index")
+	_, err = riak.NewBucket("augend.index")
 	if err != nil {
 		fmt.Println("could not get/create fact bucket")
 		return err

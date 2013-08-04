@@ -9,7 +9,7 @@ import (
 type Tag struct {
 	Name       string
 	Facts      riak.Many
-	riak.Model `riak:"test.augend.tag"`
+	riak.Model `riak:"augend.tag"`
 }
 
 func (t *Tag) Resolve(count int) (err error) {
