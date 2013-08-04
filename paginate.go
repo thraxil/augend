@@ -22,8 +22,8 @@ type Paginator struct {
 func (p Paginator) GetPage(r *http.Request) Page {
 	pagen, err := strconv.Atoi(r.FormValue("page"))
 	if err != nil {
-		// can't parse as int? just default to zero
-		pagen = 0
+		// can't parse as int? just default to one
+		pagen = 1
 	}
 	return Page{Paginator: p, PageNumber: pagen}
 }
@@ -43,7 +43,7 @@ func (p Page) Items() []Fact {
 
 func (p Page) Offset() int {
 	total_items := p.Paginator.Count()
-	offset := p.PageNumber * p.Paginator.PerPage
+	offset := (p.PageNumber - 1) * p.Paginator.PerPage
 	// a couple reasonable boundaries
 	offset = minint(offset, total_items)
 	offset = maxint(offset, 0)
@@ -60,16 +60,16 @@ func (p Page) NumItems() int {
 }
 
 func (p Page) PrevPage() int {
-	return maxint(p.PageNumber-1, 0)
+	return maxint(p.PageNumber-1, 1)
 }
 
 func (p Page) HasPrev() bool {
-	return p.PageNumber > 0
+	return p.PageNumber > 1
 }
 
 func (p Page) NextPage() int {
 	total_items := p.Paginator.Count()
-	return minint(p.PageNumber+1, int(total_items/p.Paginator.PerPage))
+	return minint(p.PageNumber+1, int(total_items/p.Paginator.PerPage)+1)
 }
 
 func (p Page) HasNext() bool {

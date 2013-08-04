@@ -6,8 +6,8 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type SiteResponse struct {
@@ -25,14 +25,17 @@ func (f FactIndex) TotalItems() int {
 }
 
 func (f FactIndex) ItemRange(offset, count int) []Fact {
-	facts_on_page := minint(count, (f.TotalItems() - offset))
-	facts := make([]Fact, facts_on_page)
-	for i := 0; i < facts_on_page; i++ {
+	total := f.Facts.Len()
+	facts := make([]Fact, count)
+	for i := 0; i < count; i++ {
 		var lfact Fact
-		f.Facts[offset+i].Get(&lfact)
-		facts[facts_on_page-1-i] = lfact
+		f.Facts[total-(offset+i+1)].Get(&lfact)
+		facts[i] = lfact
 	}
 	return facts
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {

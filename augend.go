@@ -40,6 +40,7 @@ func main() {
 		return
 	}
 	//	fmt.Println(index.Facts.Len())
+	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/fact/", factHandler)
 	http.HandleFunc("/tag/", tagHandler)
