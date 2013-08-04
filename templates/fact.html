@@ -2,7 +2,7 @@
 
 {{define "content"}}
 <h1>{{.Fact.Title}}</h1>
-<p>{{.Fact.Details}}</p>
+{{.Fact.RenderDetails}}
 {{ if .Fact.HasSource }}
 <div class="source"><i class="icon-bookmark"></i><b>Source</b>:
 <a href="{{.Fact.SourceUrl}}">{{.Fact.SourceName}}</a></div>

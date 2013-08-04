@@ -135,6 +135,13 @@ func factHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, fr)
 }
 
+type AddResponse struct {
+	SourceName string
+	SourceUrl  string
+	Details    string
+	SiteResponse
+}
+
 func addHandler(w http.ResponseWriter, r *http.Request) {
 	sess, _ := store.Get(r, "augend")
 	username, found := sess.Values["user"]
@@ -169,9 +176,14 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
+		source_name := r.FormValue("source_name")
+		source_url := r.FormValue("source_url")
+		details := r.FormValue("details")
+		ar := AddResponse{
+			SourceName: source_name, SourceUrl: source_url, Details: details}
+		ar.Username = username.(string)
 		tmpl := getTemplate("add.html")
-		ctx := SiteResponse{Username: username.(string)}
-		tmpl.Execute(w, ctx)
+		tmpl.Execute(w, ar)
 	}
 }
 

@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/nu7hatch/gouuid"
+	"github.com/russross/blackfriday"
 	"github.com/tpjg/goriakpbc"
+	"html/template"
 	"strings"
 	"time"
 )
@@ -61,6 +63,10 @@ func (f Fact) GetUser() User {
 	var user User
 	f.User.Get(&user)
 	return user
+}
+
+func (f Fact) RenderDetails() template.HTML {
+	return template.HTML(string(blackfriday.MarkdownCommon([]byte(f.Details))))
 }
 
 func NewFact(title, details, source_name, source_url, tags string, user User) *Fact {

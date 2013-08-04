@@ -18,3 +18,4 @@ install_deps:
 	go get code.google.com/p/go.crypto/bcrypt
 	go get github.com/gorilla/sessions
 	go get github.com/stvp/go-toml-config
+	go get github.com/russross/blackfriday

@@ -2,6 +2,10 @@
 
 {{define "content"}}
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<p>(<b>bookmarklet</b>:
+<a rel="tooltip" title="drag this onto your browser toolbar"
+href="javascript:window.location='http://localhost:9999/add/?source_url='+escape(window.location)+';source_name='+escape(document.title)+';details=&gt;%20'+escape((window.getSelection)?window.getSelection():document.getSelection());">add fact</a>)
+</p>
 <form action="." method="post">
 	<fieldset>
 		<legend>Add Fact</legend>
@@ -15,6 +19,7 @@
 				<div class="col-lg-9">
 					<input type="text" name="details0"
 								 class="form-control  details"
+								 value="{{.Details}}"
 								 placeholder="Details">
 				</div>
 			</div>
@@ -22,10 +27,12 @@
 			<div class="row">
 				<div class="col-lg-3">
 					<input type="text" class="form-control  source-name"
+								 value="{{.SourceName}}"
 								 name="source_name0" placeholder="Source Name">
 				</div>
 				<div class="col-lg-5">
 					<input type="text" class="form-control  source-url"
+								 value="{{.SourceUrl}}"
 								 name="source_url0" placeholder="Source URL">
 				</div>
 				<div class="col-lg-4">
