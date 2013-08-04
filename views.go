@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"strconv"
 )
 
 type SiteResponse struct {
@@ -139,14 +140,30 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "POST" {
-		title := r.PostFormValue("title")
-		details := r.PostFormValue("details")
-		source_name := r.PostFormValue("source_name")
-		source_url := r.PostFormValue("source_url")
-		tags := r.PostFormValue("tags")
-		var user User
-		riak.LoadModel(username.(string), &user)
-		NewFact(title, details, source_name, source_url, tags, user)
+		// call once to make sure the form is initialized
+		// before we access r.Form directly
+		r.PostFormValue("title0")
+
+		for k, _ := range r.Form {
+			if strings.HasPrefix(k, "title") {
+				idx, err := strconv.Atoi(k[5:])
+				if err != nil {
+					continue
+				}
+				title := r.PostFormValue("title" + strconv.Itoa(idx))
+				if title == "" {
+					// no title? don't bother
+					continue
+				}
+				details := r.PostFormValue("details" + strconv.Itoa(idx))
+				source_name := r.PostFormValue("source_name" + strconv.Itoa(idx))
+				source_url := r.PostFormValue("source_url" + strconv.Itoa(idx))
+				tags := r.PostFormValue("tags" + strconv.Itoa(idx))
+				var user User
+				riak.LoadModel(username.(string), &user)
+				NewFact(title, details, source_name, source_url, tags, user)
+			}
+		}
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		tmpl := getTemplate("add.html")

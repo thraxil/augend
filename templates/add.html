@@ -1,34 +1,47 @@
 {{define "title"}}Add Fact{{end}}
 
 {{define "content"}}
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 <form action="." method="post">
 	<fieldset>
 		<legend>Add Fact</legend>
 
-		<div class="row">
-			<div class="col-lg-3">
-			<input type="text" name="title" class="form-control input-small"
-						 id="title" placeholder="Title">
+		<div class="row" id="fact-row-0">
+			<div class="row">
+				<div class="col-lg-3">
+					<input type="text" name="title0" class="title form-control "
+								 placeholder="Title">
+				</div>
+				<div class="col-lg-9">
+					<input type="text" name="details0"
+								 class="form-control  details"
+								 placeholder="Details">
+				</div>
 			</div>
-			<div class="col-lg-3">
-			<input type="text" name="details" class="form-control  input-small"
-						 id="details" placeholder="Details">
+
+			<div class="row">
+				<div class="col-lg-3">
+					<input type="text" class="form-control  source-name"
+								 name="source_name0" placeholder="Source Name">
+				</div>
+				<div class="col-lg-5">
+					<input type="text" class="form-control  source-url"
+								 name="source_url0" placeholder="Source URL">
+				</div>
+				<div class="col-lg-4">
+					<input type="text" class="form-control  tags"
+								 name="tags0" placeholder="Tags">
+				</div>
 			</div>
-			<div class="col-lg-2">
-			<input type="text" class="form-control  input-small" id="source_name"
-						 name="source_name" placeholder="Source Name">
-			</div>
-			<div class="col-lg-2">
-			<input type="text" class="form-control  input-small" id="source_url"
-						 name="source_url" placeholder="Source URL">
-			</div>
-			<div class="col-lg-2">
-			<input type="text" class="form-control input-small" id="tags"
-						 name="tags" placeholder="Tags">
+			<div class="row">
+				<p>&nbsp;</p>
 			</div>
 		</div>
+
+		<div id="insert-point"></div>
 
 		<input type="submit" value="add fact" class="btn btn-default" />
 	</fieldset>
 </form>
+<script src="/media/multiadd.js"></script>
 {{end}}
