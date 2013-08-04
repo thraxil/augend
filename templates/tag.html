@@ -1,6 +1,11 @@
 {{define "title"}}Tag: {{.Tag.Name}}{{end}}
 {{define "content"}}
-<h1>Tag: {{.Tag.Name}}</h1>
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+	<li><a href="/tag/">Tags</a></li>
+  <li class="active">{{.Tag.Name}}</li>
+</ul>
+
 {{range .Tag.ListFacts}}
 <div class="fact row" id="fact-{{.Key}}">
   <div class="span6"><h2>{{.Title}}</h2></div>

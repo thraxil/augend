@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -61,7 +62,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type TagIndexResponse struct {
-	Tags []Tag
+	Tags TagList
 	SiteResponse
 }
 
@@ -70,6 +71,12 @@ type TagResponse struct {
 	SiteResponse
 }
 
+type TagList []Tag
+
+func (p TagList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p TagList) Len() int           { return len(p) }
+func (p TagList) Less(i, j int) bool { return p[i].Name < p[j].Name }
+
 func tagHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.String(), "/")
 	sess, _ := store.Get(r, "augend")
@@ -77,13 +84,13 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 	if len(parts) < 3 || parts[2] == "" {
 		index := getOrCreateTagIndex()
 		n := index.Tags.Len()
-		tags := make([]Tag, n)
+		tags := make(TagList, n)
 		for i, t := range index.Tags {
 			var ltag Tag
 			t.Get(&ltag)
 			tags[i] = ltag
 		}
-
+		sort.Sort(tags)
 		ir := TagIndexResponse{
 			Tags: tags,
 		}

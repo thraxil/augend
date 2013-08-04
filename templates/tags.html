@@ -1,9 +1,12 @@
 {{define "title"}}Tags{{end}}
 {{define "content"}}
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li class="active">Tags</li>
+</ul>
 {{range .Tags}}
 
-<div class="fact row" id="tag-{{.Key}}">
-  <div class="span6"><h2><a href="{{.Url}}">{{.Name}}</a></h2></div>
-</div>
+<a href="{{.Url}}" class="label label-info">{{.Name}}</a>
+
 {{end}}
 {{end}}

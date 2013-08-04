@@ -55,8 +55,12 @@ func (f Fact) ListTags() []Tag {
 	return tl
 }
 
-func (f Fact) HasSource() bool {
+func (f Fact) HasSourceName() bool {
 	return f.SourceName != ""
+}
+
+func (f Fact) HasSourceUrl() bool {
+	return f.SourceUrl != ""
 }
 
 func (f Fact) GetUser() User {

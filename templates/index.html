@@ -22,28 +22,35 @@
 
 	<div class="col-lg-8">
 		{{ if .Details }}
-		<div class="span6 details"><p>{{.RenderDetails}}</p></div>
+		<div class="details"><p>{{.RenderDetails}}</p></div>
 		{{ end }}
 
-		{{ if .HasSource }}
+		{{ if .HasSourceName }}
 		<div class="source">
-			<i class="icon-bookmark"></i><b>Source</b>:
-			<a href="{{.SourceUrl}}">{{.SourceName}}</a>
+			<b>Source</b>:
+			{{ if .HasSourceUrl }}
+			<a href="{{.SourceUrl}}">{{end}}{{.SourceName}}{{ if .HasSourceUrl }}</a>{{end}}
 		</div>
+		{{ else }}
+		{{ if .HasSourceUrl }}
+		<div class="source">
+			<b>Source</b>:
+			<a href="{{.SourceUrl}}">{{.SourceUrl}}</a>
+		</div>
+		{{ end }}
 		{{ end }}
 
 		{{if .HasTags }}
 		<div>
 			<b>Tags:</b>
 			{{range .ListTags}}
-			<a href="{{.Url}}">{{.Name}}</a>
+			<a href="{{.Url}}" class="label label-info">{{.Name}}</a>
 			{{end}}
 		</div>
 		{{end}}
 
 		<div class="added">
-			<span class="glyphicon glyphicon-chevron-right"></span>
-			added <a href="{{.Url}}">{{.Added}}</a> by {{.GetUser.Username}}
+			<b>Added</b>: <a href="{{.Url}}">{{.Added}}</a> by {{.GetUser.Username}}
 		</div>
 	</div>
 </div>

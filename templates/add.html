@@ -2,10 +2,10 @@
 
 {{define "content"}}
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-<p>(<b>bookmarklet</b>:
-<a rel="tooltip" title="drag this onto your browser toolbar"
-href="javascript:window.location='http://localhost:9999/add/?source_url='+escape(window.location)+';source_name='+escape(document.title)+';details=&gt;%20'+escape((window.getSelection)?window.getSelection():document.getSelection());">add fact</a>)
-</p>
+
+<p><a rel="tooltip" title="drag this onto your browser toolbar"
+href="javascript:window.location='http://localhost:9999/add/?source_url='+escape(window.location)+';source_name='+escape(document.title)+';details=&gt;%20'+escape((window.getSelection)?window.getSelection():document.getSelection());"><span class="glyphicon glyphicon-bookmark"></span></a></p>
+
 <form action="." method="post">
 	<fieldset>
 		<legend>Add Fact</legend>

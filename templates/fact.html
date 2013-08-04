@@ -3,16 +3,28 @@
 {{define "content"}}
 <h1>{{.Fact.Title}}</h1>
 {{.Fact.RenderDetails}}
-{{ if .Fact.HasSource }}
-<div class="source"><i class="icon-bookmark"></i><b>Source</b>:
-<a href="{{.Fact.SourceUrl}}">{{.Fact.SourceName}}</a></div>
 
-{{end}}
+		{{ if .Fact.HasSourceName }}
+		<div class="source">
+			<b>Source</b>:
+			{{ if .Fact.HasSourceUrl }}
+			<a href="{{.Fact.SourceUrl}}">{{end}}{{.Fact.SourceName}}{{ if .Fact.HasSourceUrl }}</a>{{end}}
+		</div>
+		{{ else }}
+		{{ if .Fact.HasSourceUrl }}
+		<div class="source">
+			<b>Source</b>:
+			<a href="{{.Fact.SourceUrl}}">{{.Fact.SourceUrl}}</a>
+		</div>
+		{{ end }}
+		{{ end }}
+
+
 <p>added {{.Fact.Added}} by {{.Fact.GetUser.Username}}</p>
 
 {{ if .Fact.HasTags }}
 <div><b>Tags:</b>{{range .Fact.ListTags}}
-<a href="{{.Url}}">{{.Name}}</a>
+<a href="{{.Url}}" class="label label-info">{{.Name}}</a>
 {{end}}</div>
 {{end}}
 {{end}}

@@ -1,9 +1,9 @@
 * normalize tag names
 ** remove non-URL safe chars
-* sort tags index
 * autocomplete tags on add form
 * bulk import script
 * change bucket names for 1.0 release
 * resolve siblings
 * search
-* avoid making link for facts with source name but no url
+* atom feed
+* correct bookmarklet link
