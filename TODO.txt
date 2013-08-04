@@ -1,9 +1,9 @@
 * normalize tag names
 ** remove non-URL safe chars
 * autocomplete tags on add form
-* bulk import script
 * change bucket names for 1.0 release
 * resolve siblings
 * search
 * atom feed
 * correct bookmarklet link
+* send metrics to statsd/graphite

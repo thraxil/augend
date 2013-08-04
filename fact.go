@@ -104,3 +104,40 @@ func NewFact(title, details, source_name, source_url, tags string, user User) *F
 	}
 	return &fact
 }
+
+func ImportFact(title, details, source_name, source_url, added, username string,
+	tags []string) *Fact {
+
+	var user User
+	riak.LoadModel(username, &user)
+
+	var fact Fact
+	u4, err := uuid.NewV4()
+	if err != nil {
+		fmt.Println("error:", err)
+		return nil
+	}
+
+	err = riak.NewModel(u4.String(), &fact)
+	fact.Title = title
+	fact.Details = details
+	fact.SourceName = source_name
+	fact.SourceUrl = source_url
+	fact.User.Set(&user)
+	fact.Added = added
+
+	fact.SaveAs(u4.String())
+
+	index := getOrCreateFactIndex()
+	if index == nil {
+		fmt.Println("unable to get/create fact index")
+		return nil
+	}
+	index.Facts.Add(&fact)
+	index.SaveAs("fact-index")
+	for _, t := range tags {
+		fact.AddTag(t)
+	}
+	return &fact
+
+}

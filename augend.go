@@ -14,7 +14,9 @@ var template_dir = "templates"
 
 func main() {
 	var configFile string
+	var importjson string
 	flag.StringVar(&configFile, "config", "./dev.conf", "TOML config file")
+	flag.StringVar(&importjson, "importjson", "", "json file to import")
 	flag.Parse()
 	var (
 		riak_host  = config.String("riak_host", "")
@@ -39,6 +41,12 @@ func main() {
 		fmt.Println("problem creating buckets. can't start")
 		return
 	}
+
+	if importjson != "" {
+		fmt.Println("importing JSON file")
+		importJsonFile(importjson)
+	}
+
 	//	fmt.Println(index.Facts.Len())
 	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/", indexHandler)

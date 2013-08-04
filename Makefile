@@ -1,6 +1,6 @@
 all: augend
 
-augend: augend.go fact.go views.go tag.go indices.go paginate.go
+augend: augend.go fact.go views.go tag.go indices.go paginate.go importjson.go
 	go build .
 
 run: augend
