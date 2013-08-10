@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/thraxil/paginate"
 	"github.com/tpjg/goriakpbc"
 	"html/template"
 	"net/http"
@@ -17,7 +18,7 @@ type SiteResponse struct {
 
 type IndexResponse struct {
 	Facts []Fact
-	Page  Page
+	Page  paginate.Page
 	SiteResponse
 }
 
@@ -45,7 +46,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "could not retrieve or create main fact index")
 		return
 	}
-	var p = Paginator{ItemList: index, PerPage: 20}
+	var p = paginate.Paginator{ItemList: index, PerPage: 20}
 	page := p.GetPage(r)
 	ifacts := page.Items()
 	facts := make([]Fact, len(ifacts))

@@ -1,6 +1,6 @@
 all: augend
 
-augend: augend.go fact.go views.go tag.go indices.go paginate.go importjson.go
+augend: augend.go fact.go views.go tag.go indices.go importjson.go
 	go build .
 
 run: augend
@@ -13,6 +13,7 @@ fmt:
 	go fmt *.go
 
 install_deps:
+	go get github.com/thraxil/paginate
 	go get github.com/nu7hatch/gouuid
 	go get github.com/tpjg/goriakpbc
 	go get code.google.com/p/go.crypto/bcrypt
