@@ -37,7 +37,7 @@ type Page struct {
 	PageNumber int
 }
 
-func (p Page) Items() []Fact {
+func (p Page) Items() []interface{} {
 	return p.Paginator.ItemList.ItemRange(p.Offset(), p.NumItems())
 }
 
@@ -79,5 +79,5 @@ func (p Page) HasNext() bool {
 
 type Pagable interface {
 	TotalItems() int
-	ItemRange(offset, count int) []Fact
+	ItemRange(offset, count int) []interface{}
 }

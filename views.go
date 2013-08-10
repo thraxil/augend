@@ -25,9 +25,9 @@ func (f FactIndex) TotalItems() int {
 	return f.Facts.Len()
 }
 
-func (f FactIndex) ItemRange(offset, count int) []Fact {
+func (f FactIndex) ItemRange(offset, count int) []interface{} {
 	total := f.Facts.Len()
-	facts := make([]Fact, count)
+	facts := make([]interface{}, count)
 	for i := 0; i < count; i++ {
 		var lfact Fact
 		f.Facts[total-(offset+i+1)].Get(&lfact)
@@ -47,7 +47,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var p = Paginator{ItemList: index, PerPage: 20}
 	page := p.GetPage(r)
-	facts := page.Items()
+	ifacts := page.Items()
+	facts := make([]Fact, len(ifacts))
+	for i, v := range ifacts {
+		facts[i] = v.(Fact)
+	}
 	ir := IndexResponse{
 		Page:  page,
 		Facts: facts,
