@@ -4,13 +4,16 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gorilla/sessions"
+	"github.com/peterbourgon/g2s"
 	"github.com/stvp/go-toml-config"
 	"github.com/tpjg/goriakpbc"
 	"net/http"
+	"time"
 )
 
 var store sessions.Store
 var template_dir = "templates"
+var statsd g2s.Statter
 
 func main() {
 	var configFile string
@@ -46,17 +49,27 @@ func main() {
 		fmt.Println("importing JSON file")
 		importJsonFile(importjson)
 	}
-
+	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
 	//	fmt.Println(index.Facts.Len())
 	http.HandleFunc("/favicon.ico", faviconHandler)
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/fact/", factHandler)
-	http.HandleFunc("/tag/", tagHandler)
-	http.HandleFunc("/add/", addHandler)
-	http.HandleFunc("/register/", registerHandler)
-	http.HandleFunc("/login/", loginHandler)
-	http.HandleFunc("/logout/", logoutHandler)
+	http.HandleFunc("/", makeHandler(indexHandler))
+	http.HandleFunc("/fact/", makeHandler(factHandler))
+	http.HandleFunc("/tag/", makeHandler(tagHandler))
+	http.HandleFunc("/add/", makeHandler(addHandler))
+	http.HandleFunc("/register/", makeHandler(registerHandler))
+	http.HandleFunc("/login/", makeHandler(loginHandler))
+	http.HandleFunc("/logout/", makeHandler(logoutHandler))
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir(*media_dir))))
 	http.ListenAndServe(":"+*port, nil)
+}
+
+func makeHandler(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		t0 := time.Now()
+		f(w, r)
+		t1 := time.Now()
+		statsd.Counter(1.0, "augend.response.200", 1)
+		statsd.Timing(1.0, "augend.view.GET", t1.Sub(t0))
+	}
 }

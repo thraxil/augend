@@ -20,3 +20,4 @@ install_deps:
 	go get github.com/gorilla/sessions
 	go get github.com/stvp/go-toml-config
 	go get github.com/russross/blackfriday
+	go get github.com/peterbourgon/g2s
