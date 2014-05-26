@@ -18,8 +18,10 @@ var statsd g2s.Statter
 func main() {
 	var configFile string
 	var importjson string
+	var keyjson string
 	flag.StringVar(&configFile, "config", "./dev.conf", "TOML config file")
 	flag.StringVar(&importjson, "importjson", "", "json file to import")
+	flag.StringVar(&keyjson, "keyjson", "", "json file with keys to repair index")
 	flag.Parse()
 	var (
 		riak_host  = config.String("riak_host", "")
@@ -48,6 +50,10 @@ func main() {
 	if importjson != "" {
 		fmt.Println("importing JSON file")
 		importJsonFile(importjson)
+	}
+	if keyjson != "" {
+		fmt.Println("importing Key JSON file and repairing index")
+		repairIndex(keyjson)
 	}
 	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
 	//	fmt.Println(index.Facts.Len())

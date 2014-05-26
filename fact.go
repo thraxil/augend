@@ -141,3 +141,22 @@ func ImportFact(title, details, source_name, source_url, added, username string,
 	return &fact
 
 }
+
+func ImportFactIndexOnly(key string) *Fact {
+	var fact Fact
+	err := riak.LoadModel(key, &fact)
+	if err != nil {
+		fmt.Println("unable to load fact: " + key)
+		return nil
+	}
+	fmt.Println("loaded fact " + fact.Title)
+	index := getOrCreateFactIndex()
+	if index == nil {
+		fmt.Println("unable to get/create fact index")
+		return nil
+	}
+	index.Facts.Add(&fact)
+	index.SaveAs("fact-index")
+	fmt.Println("added to index")
+	return &fact
+}

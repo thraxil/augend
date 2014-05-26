@@ -28,3 +28,18 @@ func importJsonFile(filename string) {
 			"anders", f.Tags)
 	}
 }
+
+type KeyJsonFile struct {
+	Keys []string
+}
+
+func repairIndex(filename string) {
+	fmt.Println(filename)
+	data, _ := ioutil.ReadFile(filename)
+	var keys KeyJsonFile
+	json.Unmarshal(data, &keys)
+	for _, k := range keys.Keys {
+		fmt.Println(k)
+		ImportFactIndexOnly(k)
+	}
+}
