@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gorilla/sessions"
 	"github.com/peterbourgon/g2s"
 	"github.com/stvp/go-toml-config"
 	"github.com/tpjg/goriakpbc"
-	"net/http"
-	"time"
 )
 
 var store sessions.Store
@@ -18,9 +19,11 @@ var statsd g2s.Statter
 func main() {
 	var configFile string
 	var importjson string
+	var repair string
 	var keyjson string
 	flag.StringVar(&configFile, "config", "./dev.conf", "TOML config file")
 	flag.StringVar(&importjson, "importjson", "", "json file to import")
+	flag.StringVar(&repair, "repair", "", "repair indices")
 	flag.StringVar(&keyjson, "keyjson", "", "json file with keys to repair index")
 	flag.Parse()
 	var (
@@ -46,7 +49,10 @@ func main() {
 		fmt.Println("problem creating buckets. can't start")
 		return
 	}
-
+	if repair != "" {
+		fmt.Println("repairing indices")
+		repairIndices()
+	}
 	if importjson != "" {
 		fmt.Println("importing JSON file")
 		importJsonFile(importjson)

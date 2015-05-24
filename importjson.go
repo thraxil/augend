@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 )
 
 type JsonFile struct {
@@ -42,4 +43,37 @@ func repairIndex(filename string) {
 		fmt.Println(k)
 		ImportFactIndexOnly(k)
 	}
+}
+
+func repairIndices() {
+	index := getOrCreateTagIndex()
+	n := index.Tags.Len()
+	tags := make(TagList, n)
+
+	facts := getOrCreateFactIndex()
+	if facts == nil {
+		fmt.Println("unable to get/create fact index")
+		return
+	}
+	seen := make(map[string]bool)
+
+	for i, t := range index.Tags {
+		var ltag Tag
+		t.Get(&ltag)
+		tags[i] = ltag
+		log.Println("TAG: ", ltag.Name)
+		for _, f := range ltag.ListFacts() {
+			log.Println("\tFACT: ", f.Title)
+			_, ok := seen[f.Key()]
+			if ok {
+				log.Println("\talready have it")
+			} else {
+				facts.Facts.Add(&f)
+				log.Println("\tadded")
+				seen[f.Key()] = true
+			}
+		}
+	}
+	facts.SaveAs("fact-index")
+	log.Println("done")
 }
