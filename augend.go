@@ -19,10 +19,12 @@ var statsd g2s.Statter
 func main() {
 	var configFile string
 	var importjson string
+	var dumpjson string
 	var repair string
 	var keyjson string
 	flag.StringVar(&configFile, "config", "./dev.conf", "TOML config file")
 	flag.StringVar(&importjson, "importjson", "", "json file to import")
+	flag.StringVar(&dumpjson, "dumpjson", "", "dump data as json")
 	flag.StringVar(&repair, "repair", "", "repair indices")
 	flag.StringVar(&keyjson, "keyjson", "", "json file with keys to repair index")
 	flag.Parse()
@@ -50,16 +52,24 @@ func main() {
 		return
 	}
 	if repair != "" {
-		fmt.Println("repairing indices")
+		fmt.Println("repairing fact index")
 		repairIndices()
+		return
 	}
 	if importjson != "" {
 		fmt.Println("importing JSON file")
 		importJsonFile(importjson)
+		return
 	}
 	if keyjson != "" {
 		fmt.Println("importing Key JSON file and repairing index")
 		repairIndex(keyjson)
+		return
+	}
+	if dumpjson != "" {
+		fmt.Println("dumping database as json")
+		dumpJSON(dumpjson)
+		return
 	}
 	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
 	//	fmt.Println(index.Facts.Len())

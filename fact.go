@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/nu7hatch/gouuid"
-	"github.com/russross/blackfriday"
-	"github.com/tpjg/goriakpbc"
 	"html/template"
 	"strings"
 	"time"
+
+	"github.com/nu7hatch/gouuid"
+	"github.com/russross/blackfriday"
+	"github.com/tpjg/goriakpbc"
 )
 
 type Fact struct {
@@ -51,6 +52,16 @@ func (f Fact) ListTags() []Tag {
 		var ltag Tag
 		t.Get(&ltag)
 		tl[i] = ltag
+	}
+	return tl
+}
+
+func (f Fact) ListTagStrings() []string {
+	tl := make([]string, f.Tags.Len())
+	for i, t := range f.Tags {
+		var ltag Tag
+		t.Get(&ltag)
+		tl[i] = ltag.Name
 	}
 	return tl
 }
