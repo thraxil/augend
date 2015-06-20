@@ -1,8 +1,9 @@
 package main
 
 import (
-	"code.google.com/p/go.crypto/bcrypt"
 	"fmt"
+
+	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/tpjg/goriakpbc"
 )
 
@@ -48,17 +49,3 @@ func (u User) CheckPassword(password string) bool {
 	}
 	return true
 }
-
-//Login validates and returns a user object if they exist in the database.
-// func Login(ctx *Context, username, password string) (u *User, err error) {
-//   err = ctx.C("users").Find(bson.M{"username": username}).One(&u)
-//   if err != nil {
-//       return
-//   }
-
-//   err = bcrypt.CompareHashAndPassword(u.Password, []byte(password))
-//   if err != nil {
-//       u = nil
-//   }
-//   return
-// }
