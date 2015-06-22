@@ -1,67 +1,43 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
-	"strings"
 	"time"
 
-	"github.com/nu7hatch/gouuid"
 	"github.com/russross/blackfriday"
-	"github.com/tpjg/goriakpbc"
 )
 
 type Fact struct {
+	UUID       string ""
 	Title      string ""
 	Details    string ""
 	SourceName string ""
 	SourceUrl  string ""
-	Added      string ""
-	User       riak.One
-	Tags       riak.Many
-	riak.Model `riak:"augend.fact"`
+	Added      time.Time
+	User       user
+	Tags       []Tag
 }
 
 func (f *Fact) Url() string {
-	return "/fact/" + f.Key() + "/"
+	return "/fact/" + f.UUID + "/"
 }
 
-func (f *Fact) Resolve(count int) (err error) {
-	fmt.Println("resolve fact")
-	return nil
-}
-
-func (f *Fact) AddTag(t string) {
-	tag := getOrCreateTag(t)
-	if tag == nil {
-		return
-	}
-	f.Tags.Add(tag)
-	f.SaveAs(f.Key())
-	tag.Facts.Add(f)
-	tag.SaveAs(tag.Name)
+func (f Fact) RenderAdded() string {
+	return f.Added.Format(time.RFC3339)
 }
 
 func (f Fact) HasTags() bool {
-	return f.Tags.Len() > 0
+	return len(f.Tags) > 0
 }
 
 func (f Fact) ListTags() []Tag {
-	tl := make([]Tag, f.Tags.Len())
-	for i, t := range f.Tags {
-		var ltag Tag
-		t.Get(&ltag)
-		tl[i] = ltag
-	}
-	return tl
+	return f.Tags
 }
 
 func (f Fact) ListTagStrings() []string {
-	tl := make([]string, f.Tags.Len())
+	tl := make([]string, len(f.Tags))
 	for i, t := range f.Tags {
-		var ltag Tag
-		t.Get(&ltag)
-		tl[i] = ltag.Name
+		tl[i] = t.Name
 	}
 	return tl
 }
@@ -74,100 +50,43 @@ func (f Fact) HasSourceUrl() bool {
 	return f.SourceUrl != ""
 }
 
-func (f Fact) GetUser() User {
-	var user User
-	f.User.Get(&user)
-	return user
-}
-
 func (f Fact) RenderDetails() template.HTML {
 	return template.HTML(string(blackfriday.MarkdownCommon([]byte(f.Details))))
 }
 
-func NewFact(title, details, source_name, source_url, tags string, user User) *Fact {
-	var fact Fact
-	u4, err := uuid.NewV4()
-	if err != nil {
-		fmt.Println("error:", err)
-		return nil
-	}
+// func ImportFact(title, details, source_name, source_url, added, username string,
+// 	tags []string) *Fact {
 
-	err = riak.NewModel(u4.String(), &fact)
-	fact.Title = title
-	fact.Details = details
-	fact.SourceName = source_name
-	fact.SourceUrl = source_url
-	fact.User.Set(&user)
-	t := time.Now()
-	fact.Added = t.Format(time.RFC3339)
+// 	var user User
+// 	riak.LoadModel(username, &user)
 
-	fact.SaveAs(u4.String())
+// 	var fact Fact
+// 	u4, err := uuid.NewV4()
+// 	if err != nil {
+// 		fmt.Println("error:", err)
+// 		return nil
+// 	}
 
-	index := getOrCreateFactIndex()
-	if index == nil {
-		fmt.Println("unable to get/create fact index")
-		return nil
-	}
-	index.Facts.Add(&fact)
-	index.SaveAs("fact-index")
-	for _, t := range strings.Split(tags, ",") {
-		fact.AddTag(t)
-	}
-	return &fact
-}
+// 	err = riak.NewModel(u4.String(), &fact)
+// 	fact.Title = title
+// 	fact.Details = details
+// 	fact.SourceName = source_name
+// 	fact.SourceUrl = source_url
+// 	fact.User.Set(&user)
+// 	fact.Added = added
 
-func ImportFact(title, details, source_name, source_url, added, username string,
-	tags []string) *Fact {
+// 	fact.SaveAs(u4.String())
 
-	var user User
-	riak.LoadModel(username, &user)
+// 	index := getOrCreateFactIndex()
+// 	if index == nil {
+// 		fmt.Println("unable to get/create fact index")
+// 		return nil
+// 	}
+// 	index.Facts.Add(&fact)
+// 	index.SaveAs("fact-index")
+// 	for _, t := range tags {
+// 		fact.AddTag(t)
+// 	}
+// 	return &fact
 
-	var fact Fact
-	u4, err := uuid.NewV4()
-	if err != nil {
-		fmt.Println("error:", err)
-		return nil
-	}
-
-	err = riak.NewModel(u4.String(), &fact)
-	fact.Title = title
-	fact.Details = details
-	fact.SourceName = source_name
-	fact.SourceUrl = source_url
-	fact.User.Set(&user)
-	fact.Added = added
-
-	fact.SaveAs(u4.String())
-
-	index := getOrCreateFactIndex()
-	if index == nil {
-		fmt.Println("unable to get/create fact index")
-		return nil
-	}
-	index.Facts.Add(&fact)
-	index.SaveAs("fact-index")
-	for _, t := range tags {
-		fact.AddTag(t)
-	}
-	return &fact
-
-}
-
-func ImportFactIndexOnly(key string) *Fact {
-	var fact Fact
-	err := riak.LoadModel(key, &fact)
-	if err != nil {
-		fmt.Println("unable to load fact: " + key)
-		return nil
-	}
-	fmt.Println("loaded fact " + fact.Title)
-	index := getOrCreateFactIndex()
-	if index == nil {
-		fmt.Println("unable to get/create fact index")
-		return nil
-	}
-	index.Facts.Add(&fact)
-	index.SaveAs("fact-index")
-	fmt.Println("added to index")
-	return &fact
-}
+// }

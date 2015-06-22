@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/thraxil/paginate"
-	"github.com/tpjg/goriakpbc"
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/thraxil/paginate"
 )
 
 type SiteResponse struct {
@@ -22,30 +22,35 @@ type IndexResponse struct {
 	SiteResponse
 }
 
-func (f FactIndex) TotalItems() int {
-	return f.Facts.Len()
+type paginatedFacts struct {
+	s *site
 }
 
-func (f FactIndex) ItemRange(offset, count int) []interface{} {
-	total := f.Facts.Len()
-	facts := make([]interface{}, count)
-	for i := 0; i < count; i++ {
-		var lfact Fact
-		f.Facts[total-(offset+i+1)].Get(&lfact)
-		facts[i] = lfact
+func NewPaginatedFacts(s *site) paginatedFacts {
+	return paginatedFacts{s: s}
+}
+
+func (p paginatedFacts) TotalItems() int {
+	return p.s.TotalFactsCount()
+}
+
+func (p paginatedFacts) ItemRange(offset, count int) []interface{} {
+	facts, err := p.s.ListFacts(offset, count)
+	if err != nil {
+		return make([]interface{}, 0)
 	}
-	return facts
+	out := make([]interface{}, len(facts))
+	for j, v := range facts {
+		out[j] = v
+	}
+	return out
 }
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	index := getOrCreateFactIndex()
-	if index == nil {
-		fmt.Fprintf(w, "could not retrieve or create main fact index")
-		return
-	}
+func indexHandler(w http.ResponseWriter, r *http.Request, s *site) {
+	index := NewPaginatedFacts(s)
 	var p = paginate.Paginator{ItemList: index, PerPage: 20}
 	page := p.GetPage(r)
 	ifacts := page.Items()
@@ -53,11 +58,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	for i, v := range ifacts {
 		facts[i] = v.(Fact)
 	}
+
 	ir := IndexResponse{
 		Page:  page,
 		Facts: facts,
 	}
-	sess, _ := store.Get(r, "augend")
+	sess, _ := s.Store.Get(r, "augend")
 	username, found := sess.Values["user"]
 	if found && username != "" {
 		ir.Username = username.(string)
@@ -72,30 +78,22 @@ type TagIndexResponse struct {
 }
 
 type TagResponse struct {
-	Tag Tag
+	Tag   Tag
+	Facts []Fact
 	SiteResponse
 }
 
-type TagList []Tag
-
-func (p TagList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-func (p TagList) Len() int           { return len(p) }
-func (p TagList) Less(i, j int) bool { return p[i].Name < p[j].Name }
-
-func tagHandler(w http.ResponseWriter, r *http.Request) {
+func tagHandler(w http.ResponseWriter, r *http.Request, s *site) {
 	parts := strings.Split(r.URL.String(), "/")
-	sess, _ := store.Get(r, "augend")
+	sess, _ := s.Store.Get(r, "augend")
 	username, found := sess.Values["user"]
 	if len(parts) < 3 || parts[2] == "" {
-		index := getOrCreateTagIndex()
-		n := index.Tags.Len()
-		tags := make(TagList, n)
-		for i, t := range index.Tags {
-			var ltag Tag
-			t.Get(&ltag)
-			tags[i] = ltag
+		tags, err := s.ListTags()
+		if err != nil {
+			log.Println(err)
+			fmt.Fprintf(w, "couldn't list tags")
+			return
 		}
-		sort.Sort(tags)
 		ir := TagIndexResponse{
 			Tags: tags,
 		}
@@ -107,10 +105,18 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := parts[2]
-	var tag Tag
-	riak.LoadModel(id, &tag)
-	tr := TagResponse{Tag: tag}
+	slug := parts[2]
+	tag := s.GetTagBySlug(slug)
+	facts, err := s.ListFactsByTag(tag)
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "couldn't list facts")
+		return
+	}
+	tr := TagResponse{
+		Tag:   tag,
+		Facts: facts,
+	}
 	if found && username != "" {
 		tr.Username = username.(string)
 	}
@@ -119,13 +125,13 @@ func tagHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type FactResponse struct {
-	Fact Fact
+	Fact *Fact
 	SiteResponse
 }
 
-func factHandler(w http.ResponseWriter, r *http.Request) {
-	sess, _ := store.Get(r, "augend")
-	username, found := sess.Values["user"]
+func factHandler(w http.ResponseWriter, r *http.Request, s *site) {
+	sess, _ := s.Store.Get(r, "augend")
+	username, _ := sess.Values["user"]
 	parts := strings.Split(r.URL.String(), "/")
 	if len(parts) < 3 {
 		http.Error(w, "bad request", 400)
@@ -136,12 +142,14 @@ func factHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", 400)
 		return
 	}
-	var fact Fact
-	riak.LoadModel(id, &fact)
-	fr := FactResponse{Fact: fact}
-	if found && username != "" {
-		fr.Username = username.(string)
+
+	fact, err := s.GetFactById(id)
+	if err != nil {
+		fmt.Fprintf(w, "couldn't find fact")
+		return
 	}
+	fr := FactResponse{Fact: fact}
+	fr.Username = username.(string)
 
 	tmpl := getTemplate("fact.html")
 	tmpl.Execute(w, fr)
@@ -154,18 +162,24 @@ type AddResponse struct {
 	SiteResponse
 }
 
-func addHandler(w http.ResponseWriter, r *http.Request) {
-	sess, _ := store.Get(r, "augend")
+func addHandler(w http.ResponseWriter, r *http.Request, s *site) {
+	sess, _ := s.Store.Get(r, "augend")
 	username, found := sess.Values["user"]
 	if !found || username == "" {
 		http.Redirect(w, r, "/login/", http.StatusFound)
 		return
 	}
+
+	user, err := s.GetUser(username.(string))
+	if err != nil {
+		fmt.Fprintf(w, "user not found")
+		return
+	}
+
 	if r.Method == "POST" {
 		// call once to make sure the form is initialized
 		// before we access r.Form directly
 		r.PostFormValue("title0")
-
 		for k, _ := range r.Form {
 			if strings.HasPrefix(k, "title") {
 				idx, err := strconv.Atoi(k[5:])
@@ -181,9 +195,7 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 				source_name := r.PostFormValue("source_name" + strconv.Itoa(idx))
 				source_url := r.PostFormValue("source_url" + strconv.Itoa(idx))
 				tags := r.PostFormValue("tags" + strconv.Itoa(idx))
-				var user User
-				riak.LoadModel(username.(string), &user)
-				NewFact(title, details, source_name, source_url, tags, user)
+				s.CreateFact(title, details, source_name, source_url, tags, user)
 			}
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -204,7 +216,7 @@ func registerForm(w http.ResponseWriter, req *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {
+func registerHandler(w http.ResponseWriter, r *http.Request, s *site) {
 	if r.Method == "GET" {
 		registerForm(w, r)
 		return
@@ -214,9 +226,16 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "passwords don't match")
 		return
 	}
-	user := NewUser(username, password)
+	log.Println("passwords match")
+	user, err := s.CreateUser(username, password)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Fprintf(w, "could not create user")
+		return
+	}
+	log.Println("created user")
 
-	sess, _ := store.Get(r, "augend")
+	sess, _ := s.Store.Get(r, "augend")
 	sess.Values["user"] = user.Username
 	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
@@ -227,16 +246,15 @@ func loginForm(w http.ResponseWriter, req *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func loginHandler(w http.ResponseWriter, r *http.Request, s *site) {
 	if r.Method == "GET" {
 		loginForm(w, r)
 		return
 	}
 	username, password := r.FormValue("username"), r.FormValue("password")
-	var user User
-	err := riak.LoadModel(username, &user)
+	user, err := s.GetUser(username)
+
 	if err != nil {
-		fmt.Println("couldn't load user:", err)
 		fmt.Fprintf(w, "user not found")
 		return
 	}
@@ -245,14 +263,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// store userid in session
-	sess, _ := store.Get(r, "augend")
+	sess, _ := s.Store.Get(r, "augend")
 	sess.Values["user"] = user.Username
 	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	sess, _ := store.Get(r, "augend")
+func logoutHandler(w http.ResponseWriter, r *http.Request, s *site) {
+	sess, _ := s.Store.Get(r, "augend")
 	delete(sess.Values, "user")
 	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)

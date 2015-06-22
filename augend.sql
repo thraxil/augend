@@ -9,6 +9,7 @@ CREATE TABLE facts (
 			 details text,
 			 source_name text,
 			 source_url text,
+			 owner varchar(256) references users (username) on delete cascade,
 			 added timestamp default current_timestamp
 );
 

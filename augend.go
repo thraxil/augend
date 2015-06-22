@@ -3,33 +3,39 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/peterbourgon/g2s"
 	"github.com/stvp/go-toml-config"
-	"github.com/tpjg/goriakpbc"
 )
 
-var store sessions.Store
 var template_dir = "templates"
 var statsd g2s.Statter
 
+func makeHandler(f func(http.ResponseWriter, *http.Request, *site), s *site) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		t0 := time.Now()
+		f(w, r, s)
+		t1 := time.Now()
+		statsd.Counter(1.0, "augend.response.200", 1)
+		statsd.Timing(1.0, "augend.view.GET", t1.Sub(t0))
+	}
+}
+
 func main() {
+	var store sessions.Store
 	var configFile string
 	var importjson string
-	var dumpjson string
-	var repair string
-	var keyjson string
+	//	var dumpjson string
 	flag.StringVar(&configFile, "config", "./dev.conf", "TOML config file")
 	flag.StringVar(&importjson, "importjson", "", "json file to import")
-	flag.StringVar(&dumpjson, "dumpjson", "", "dump data as json")
-	flag.StringVar(&repair, "repair", "", "repair indices")
-	flag.StringVar(&keyjson, "keyjson", "", "json file with keys to repair index")
+	//	flag.StringVar(&dumpjson, "dumpjson", "", "dump data as json")
 	flag.Parse()
 	var (
-		riak_host  = config.String("riak_host", "")
 		port       = config.String("port", "9999")
 		media_dir  = config.String("media_dir", "media")
 		secret_key = config.String("secret_key", "change-me")
@@ -38,60 +44,42 @@ func main() {
 	config.Parse(configFile)
 	template_dir = *t_dir
 
-	err := riak.ConnectClient(*riak_host)
-	if err != nil {
-		fmt.Println("error:", err)
-		return
-	}
-
 	store = sessions.NewCookieStore([]byte(*secret_key))
 
-	err = ensureBuckets()
-	if err != nil {
-		fmt.Println("problem creating buckets. can't start")
-		return
+	var DB_URL string
+	if os.Getenv("AUGEND_DB_URL") != "" {
+		DB_URL = os.Getenv("AUGEND_DB_URL")
 	}
-	if repair != "" {
-		fmt.Println("repairing fact index")
-		repairIndices()
-		return
-	}
+	log.Println(DB_URL)
+
+	p := newPersistence(DB_URL)
+	defer p.Close()
+
+	log.Println("connected to db")
+
+	s := newSite(p, store)
+
 	if importjson != "" {
 		fmt.Println("importing JSON file")
-		importJsonFile(importjson)
+		importJsonFile(importjson, s)
 		return
 	}
-	if keyjson != "" {
-		fmt.Println("importing Key JSON file and repairing index")
-		repairIndex(keyjson)
-		return
-	}
-	if dumpjson != "" {
-		fmt.Println("dumping database as json")
-		dumpJSON(dumpjson)
-		return
-	}
+	//	if dumpjson != "" {
+	//		fmt.Println("dumping database as json")
+	//		dumpJSON(dumpjson)
+	//		return
+	//	}
 	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
-	//	fmt.Println(index.Facts.Len())
 	http.HandleFunc("/favicon.ico", faviconHandler)
-	http.HandleFunc("/", makeHandler(indexHandler))
-	http.HandleFunc("/fact/", makeHandler(factHandler))
-	http.HandleFunc("/tag/", makeHandler(tagHandler))
-	http.HandleFunc("/add/", makeHandler(addHandler))
-	http.HandleFunc("/register/", makeHandler(registerHandler))
-	http.HandleFunc("/login/", makeHandler(loginHandler))
-	http.HandleFunc("/logout/", makeHandler(logoutHandler))
+	http.HandleFunc("/", makeHandler(indexHandler, s))
+	http.HandleFunc("/fact/", makeHandler(factHandler, s))
+	http.HandleFunc("/tag/", makeHandler(tagHandler, s))
+	http.HandleFunc("/add/", makeHandler(addHandler, s))
+	http.HandleFunc("/register/", makeHandler(registerHandler, s))
+	http.HandleFunc("/login/", makeHandler(loginHandler, s))
+	http.HandleFunc("/logout/", makeHandler(logoutHandler, s))
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir(*media_dir))))
-	http.ListenAndServe(":"+*port, nil)
-}
-
-func makeHandler(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		t0 := time.Now()
-		f(w, r)
-		t1 := time.Now()
-		statsd.Counter(1.0, "augend.response.200", 1)
-		statsd.Timing(1.0, "augend.view.GET", t1.Sub(t0))
-	}
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	log.Println("done")
 }

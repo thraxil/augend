@@ -6,8 +6,8 @@
   <li class="active">{{.Tag.Name}}</li>
 </ul>
 
-{{range .Tag.ListFacts}}
-<div class="fact row" id="fact-{{.Key}}">
+{{range .Facts}}
+<div class="fact row" id="fact-{{.UUID}}">
   <div class="span6"><h2>{{.Title}}</h2></div>
 {{ if .Details }}
   <div class="span6 details"><p>{{.RenderDetails}}</p></div>
@@ -29,7 +29,7 @@
 		{{ end }}
 
 <div class="added"><i class="icon-chevron-right">
-</i>added <a href="{{.Url}}">{{.Added}}</a> by {{.GetUser.Username}}</div>
+</i>added <a href="{{.Url}}">{{.RenderAdded}}</a> by {{.User.Username}}</div>
 </div>
 {{end}}
 {{end}}

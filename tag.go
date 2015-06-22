@@ -1,34 +1,25 @@
 package main
 
-import (
-	"fmt"
-	"github.com/tpjg/goriakpbc"
-	"strings"
-)
+import "strings"
 
 type Tag struct {
-	Name       string
-	Facts      riak.Many
-	riak.Model `riak:"augend.tag"`
-}
-
-func (t *Tag) Resolve(count int) (err error) {
-	return nil
+	Name string
+	Slug string
 }
 
 func (t Tag) Url() string {
-	return "/tag/" + t.Name + "/"
+	return "/tag/" + t.Slug + "/"
 }
 
-func (t Tag) ListFacts() []Fact {
-	fl := make([]Fact, t.Facts.Len())
-	for i, f := range t.Facts {
-		var lfact Fact
-		f.Get(&lfact)
-		fl[i] = lfact
-	}
-	return fl
-}
+// func (t Tag) ListFacts() []Fact {
+// 	fl := make([]Fact, t.Facts.Len())
+// 	for i, f := range t.Facts {
+// 		var lfact Fact
+// 		f.Get(&lfact)
+// 		fl[i] = lfact
+// 	}
+// 	return fl
+// }
 
 func normalizeTag(t string) string {
 	t = strings.Trim(t, " \n\t,-")
@@ -36,36 +27,8 @@ func normalizeTag(t string) string {
 	return t
 }
 
-func getOrCreateTag(t string) *Tag {
-	t = normalizeTag(t)
-	if t == "" {
-		return nil
-	}
-	var tag Tag
-	err := riak.LoadModel(t, &tag)
-	if err != nil {
-		fmt.Println("creating new tag")
-		return createTag(t)
-	}
-	return &tag
-}
+type TagList []Tag
 
-func createTag(t string) *Tag {
-	var ntag Tag
-	err := riak.NewModel(t, &ntag)
-	if err != nil {
-		fmt.Println("could not create new tag")
-		fmt.Println(err)
-		return nil
-	}
-	ntag.Name = t
-	ntag.SaveAs(t)
-	tag_index := getOrCreateTagIndex()
-	if tag_index == nil {
-		fmt.Println("no tag index!")
-		return nil
-	}
-	tag_index.Tags.Add(&ntag)
-	tag_index.SaveAs("tag-index")
-	return &ntag
-}
+func (p TagList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p TagList) Len() int           { return len(p) }
+func (p TagList) Less(i, j int) bool { return p[i].Name < p[j].Name }

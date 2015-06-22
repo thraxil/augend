@@ -20,7 +20,7 @@
 		{{ end }}
 
 
-<p>added {{.Fact.Added}} by {{.Fact.GetUser.Username}}</p>
+<p>added {{.Fact.RenderAdded}} by {{.Fact.User.Username}}</p>
 
 {{ if .Fact.HasTags }}
 <div><b>Tags:</b>{{range .Fact.ListTags}}
