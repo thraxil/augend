@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "expvar"
 	"flag"
 	"fmt"
 	"log"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/peterbourgon/g2s"
-	"github.com/stvp/go-toml-config"
 )
 
 var template_dir = "templates"
