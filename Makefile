@@ -1,3 +1,5 @@
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
 all: augend
 
 augend: augend.go fact.go views.go tag.go importjson.go persist.go
@@ -24,3 +26,9 @@ install_deps:
 	go get github.com/russross/blackfriday
 	go get github.com/peterbourgon/g2s
 	go get -u github.com/lib/pq
+
+build:
+	docker run --rm -v $(ROOT_DIR):/src -v /var/run/docker.sock:/var/run/docker.sock centurylink/golang-builder thraxil/augend
+
+push: build
+	docker push thraxil/augend
