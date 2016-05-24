@@ -20,7 +20,7 @@ fmt:
 install_deps:
 	go get github.com/thraxil/paginate
 	go get github.com/nu7hatch/gouuid
-	go get code.google.com/p/go.crypto/bcrypt
+	go get golang.org/x/crypto/bcrypt
 	go get github.com/gorilla/sessions
 	go get github.com/stvp/go-toml-config
 	go get github.com/russross/blackfriday
