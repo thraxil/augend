@@ -1,4 +1,4 @@
-package main // import "github.org/thraxil/augend"
+package main // import "github.com/thraxil/augend"
 
 import (
 	_ "expvar"
@@ -79,6 +79,7 @@ func main() {
 	http.HandleFunc("/register/", makeHandler(registerHandler, s))
 	http.HandleFunc("/login/", makeHandler(loginHandler, s))
 	http.HandleFunc("/logout/", makeHandler(logoutHandler, s))
+	http.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir(*media_dir))))
 	log.Fatal(http.ListenAndServe(":"+*port, nil))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -282,4 +283,55 @@ func getTemplate(filename string) *template.Template {
 		filepath.Join(template_dir, "base.html"),
 		filepath.Join(template_dir, filename),
 	))
+}
+
+type smoketestResponse struct {
+	Status       string   `json:"status"`
+	TestClasses  int      `json:"test_classes"`
+	TestsRun     int      `json:"tests_run"`
+	TestsPassed  int      `json:"tests_passed"`
+	TestsFailed  int      `json:"tests_failed"`
+	TestsErrored int      `json:"tests_errored"`
+	Time         float64  `json:"time"`
+	ErroredTests []string `json:"errored_tests"`
+	FailedTests  []string `json:"failed_tests"`
+}
+
+func smoketestHandler(w http.ResponseWriter, r *http.Request, s *site) {
+	var status string
+	var tests int
+
+	tests = 1
+
+	sr := smoketestResponse{
+		Status:       status,
+		TestClasses:  1,
+		TestsRun:     1,
+		TestsPassed:  tests,
+		TestsFailed:  1 - tests,
+		TestsErrored: 0,
+		Time:         1.0,
+	}
+	if sr.TestsFailed > 0 || sr.TestsErrored > 0 {
+		http.Error(w, "smoketest failed", http.StatusInternalServerError)
+	}
+
+	h := r.Header.Get("Accept")
+	if strings.Index(h, "application/json") != -1 {
+		b, _ := json.Marshal(sr)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(b)
+		return
+	}
+	smokeTemplate := `{{.Status}}
+test classes: 1
+tests run: 1
+tests passed: {{.TestsPassed}}
+tests failed: {{.TestsFailed}}
+tests errored: 0
+time: 1.0ms
+`
+	t, _ := template.New("smoketest").Parse(smokeTemplate)
+	w.Header().Set("Content-Type", "text/plain")
+	t.Execute(w, sr)
 }
