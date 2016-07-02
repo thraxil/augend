@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/braintree/manners"
@@ -100,6 +102,26 @@ func main() {
 	httpServer := manners.NewServer()
 	httpServer.Addr = address
 	httpServer.Handler = LoggingHandler(mux)
-	log.Fatal(httpServer.ListenAndServe())
-	log.Println("done")
+
+	errChan := make(chan error, 10)
+
+	go func() {
+		errChan <- httpServer.ListenAndServe()
+	}()
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+	for {
+		select {
+		case err := <-errChan:
+			if err != nil {
+				log.Fatal(err)
+			}
+		case s := <-signalChan:
+			log.Println(fmt.Sprintf("Captured %v. Exiting...", s))
+			httpServer.BlockingClose()
+			os.Exit(0)
+		}
+	}
 }
