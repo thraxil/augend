@@ -83,6 +83,8 @@ func main() {
 	http.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
 	http.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir(*media_dir))))
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	address := ":" + *port
+	log.Println("listening on", address)
+	log.Fatal(http.ListenAndServe(address, nil))
 	log.Println("done")
 }
