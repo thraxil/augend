@@ -131,8 +131,13 @@ type FactResponse struct {
 }
 
 func factHandler(w http.ResponseWriter, r *http.Request, s *site) {
-	sess, _ := s.Store.Get(r, "augend")
-	username, _ := sess.Values["user"]
+	sess, err := s.Store.Get(r, "augend")
+	if err != nil {
+		log.Println("no session store")
+		fmt.Fprintf(w, "could not create a session store")
+		return
+	}
+	username, found := sess.Values["user"]
 	parts := strings.Split(r.URL.String(), "/")
 	if len(parts) < 3 {
 		http.Error(w, "bad request", 400)
@@ -150,7 +155,9 @@ func factHandler(w http.ResponseWriter, r *http.Request, s *site) {
 		return
 	}
 	fr := FactResponse{Fact: fact}
-	fr.Username = username.(string)
+	if found && username != "" {
+		fr.Username = username.(string)
+	}
 
 	tmpl := getTemplate("fact.html")
 	tmpl.Execute(w, fr)
