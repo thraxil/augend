@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/braintree/manners"
 	"github.com/gorilla/sessions"
 	"github.com/peterbourgon/g2s"
 	config "github.com/stvp/go-toml-config"
@@ -25,6 +26,15 @@ func makeHandler(f func(http.ResponseWriter, *http.Request, *site), s *site) fun
 		statsd.Counter(1.0, "augend.response.200", 1)
 		statsd.Timing(1.0, "augend.view.GET", t1.Sub(t0))
 	}
+}
+
+func LoggingHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		format := "%s - - [%s] \"%s %s %s\" %s\n"
+		fmt.Printf(format, r.RemoteAddr, time.Now().Format(time.RFC1123),
+			r.Method, r.URL.Path, r.Proto, r.UserAgent())
+		h.ServeHTTP(w, r)
+	})
 }
 
 func main() {
@@ -72,19 +82,24 @@ func main() {
 	//		return
 	//	}
 	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
-	http.HandleFunc("/favicon.ico", faviconHandler)
-	http.HandleFunc("/", makeHandler(indexHandler, s))
-	http.HandleFunc("/fact/", makeHandler(factHandler, s))
-	http.HandleFunc("/tag/", makeHandler(tagHandler, s))
-	http.HandleFunc("/add/", makeHandler(addHandler, s))
-	http.HandleFunc("/register/", makeHandler(registerHandler, s))
-	http.HandleFunc("/login/", makeHandler(loginHandler, s))
-	http.HandleFunc("/logout/", makeHandler(logoutHandler, s))
-	http.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
-	http.Handle("/media/", http.StripPrefix("/media/",
-		http.FileServer(http.Dir(*media_dir))))
+
 	address := ":" + *port
 	log.Println("listening on", address)
-	log.Fatal(http.ListenAndServe(address, nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/favicon.ico", faviconHandler)
+	mux.HandleFunc("/", makeHandler(indexHandler, s))
+	mux.HandleFunc("/fact/", makeHandler(factHandler, s))
+	mux.HandleFunc("/tag/", makeHandler(tagHandler, s))
+	mux.HandleFunc("/add/", makeHandler(addHandler, s))
+	mux.HandleFunc("/register/", makeHandler(registerHandler, s))
+	mux.HandleFunc("/login/", makeHandler(loginHandler, s))
+	mux.HandleFunc("/logout/", makeHandler(logoutHandler, s))
+	mux.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
+	mux.Handle("/media/", http.StripPrefix("/media/",
+		http.FileServer(http.Dir(*media_dir))))
+	httpServer := manners.NewServer()
+	httpServer.Addr = address
+	httpServer.Handler = LoggingHandler(mux)
+	log.Fatal(httpServer.ListenAndServe())
 	log.Println("done")
 }
