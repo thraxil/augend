@@ -28,6 +28,7 @@ func makeHandler(f func(http.ResponseWriter, *http.Request, *site), s *site) fun
 }
 
 func main() {
+	log.Println("starting augend...")
 	var store sessions.Store
 	var configFile string
 	var importjson string
