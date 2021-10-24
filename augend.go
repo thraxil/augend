@@ -1,7 +1,7 @@
 package main // import "github.com/thraxil/augend"
 
 import (
-	_ "expvar"
+	"expvar"
 	"flag"
 	"fmt"
 	"log"
@@ -37,6 +37,20 @@ func LoggingHandler(h http.Handler) http.Handler {
 			r.Method, r.URL.Path, r.Proto, r.UserAgent())
 		h.ServeHTTP(w, r)
 	})
+}
+
+func expvarHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(w, "{\n")
+	first := true
+	expvar.Do(func(kv expvar.KeyValue) {
+		if !first {
+			fmt.Fprintf(w, ",\n")
+		}
+		first = false
+		fmt.Fprintf(w, "%q: %s", kv.Key, kv.Value)
+	})
+	fmt.Fprintf(w, "\n}\n")
 }
 
 func main() {
@@ -97,6 +111,7 @@ func main() {
 	mux.HandleFunc("/login/", makeHandler(loginHandler, s))
 	mux.HandleFunc("/logout/", makeHandler(logoutHandler, s))
 	mux.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
+	mux.HandleFunc("/debug/vars", expvarHandler)
 	mux.Handle("/media/", http.StripPrefix("/media/",
 		http.FileServer(http.Dir(*media_dir))))
 	httpServer := manners.NewServer()
