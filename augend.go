@@ -101,6 +101,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.HandleFunc("/", makeHandler(indexHandler, s))
+	mux.HandleFunc("/healthz/", makeHandler(healthzHandler, s))
 	mux.HandleFunc("/fact/", makeHandler(factHandler, s))
 	mux.HandleFunc("/tag/", makeHandler(tagHandler, s))
 	mux.HandleFunc("/add/", makeHandler(addHandler, s))

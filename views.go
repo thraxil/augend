@@ -342,3 +342,7 @@ time: 1.0ms
 	w.Header().Set("Content-Type", "text/plain")
 	t.Execute(w, sr)
 }
+
+func healthzHandler(w http.ResponseWriter, _ *http.Request, _ *site) {
+	w.WriteHeader(http.StatusOK)
+}
