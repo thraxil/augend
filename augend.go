@@ -14,7 +14,6 @@ import (
 	"github.com/braintree/manners"
 	"github.com/gorilla/sessions"
 	"github.com/peterbourgon/g2s"
-	config "github.com/stvp/go-toml-config"
 )
 
 var template_dir = "templates"
@@ -53,32 +52,30 @@ func expvarHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "\n}\n")
 }
 
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
 func main() {
 	log.Println("starting augend...")
 	var store sessions.Store
-	var configFile string
 	var importjson string
-	//	var dumpjson string
-	flag.StringVar(&configFile, "config", "./dev.conf", "TOML config file")
 	flag.StringVar(&importjson, "importjson", "", "json file to import")
-	//	flag.StringVar(&dumpjson, "dumpjson", "", "dump data as json")
 	flag.Parse()
-	var (
-		port       = config.String("port", "9999")
-		media_dir  = config.String("media_dir", "media")
-		secret_key = config.String("secret_key", "change-me")
-		t_dir      = config.String("template_dir", "templates")
-	)
-	config.Parse(configFile)
-	template_dir = *t_dir
+	port := getEnv("AUGEND_PORT", "9999")
+	media_dir := getEnv("AUGEND_MEDIA_DIR", "media")
+	template_dir = getEnv("AUGEND_TEMPLATE_DIR", "templates")
+	secret_key := getEnv("AUGEND_SECRET_KEY", "change-me")
 
-	store = sessions.NewCookieStore([]byte(*secret_key))
+	store = sessions.NewCookieStore([]byte(secret_key))
 
 	var DB_URL string
-	if os.Getenv("AUGEND_DB_URL") != "" {
-		DB_URL = os.Getenv("AUGEND_DB_URL")
+	if os.Getenv("DATABASE_URL") != "" {
+		DB_URL = os.Getenv("DATABASE_URL")
 	}
-	log.Println(DB_URL)
 
 	p := newPersistence(DB_URL)
 	defer p.Close()
@@ -99,7 +96,7 @@ func main() {
 	//	}
 	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
 
-	address := ":" + *port
+	address := ":" + port
 	log.Println("listening on", address)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/favicon.ico", faviconHandler)
@@ -113,7 +110,7 @@ func main() {
 	mux.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
 	mux.HandleFunc("/debug/vars", expvarHandler)
 	mux.Handle("/media/", http.StripPrefix("/media/",
-		http.FileServer(http.Dir(*media_dir))))
+		http.FileServer(http.Dir(media_dir))))
 	httpServer := manners.NewServer()
 	httpServer.Addr = address
 	httpServer.Handler = LoggingHandler(mux)
