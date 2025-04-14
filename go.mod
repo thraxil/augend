@@ -10,5 +10,5 @@ require (
 	github.com/peterbourgon/g2s v0.0.0-20170223122336-d4e7ad98afea
 	github.com/russross/blackfriday v1.6.0
 	github.com/thraxil/paginate v0.0.0-20131208014903-425aee97c425
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.35.0
 )
