@@ -19,6 +19,10 @@ func (s *site) GetUser(username string) (*user, error) {
 	return s.p.GetUser(username)
 }
 
+func (s *site) UpdatePassword(username string, hashedPassword []byte) error {
+	return s.p.UpdatePassword(username, hashedPassword)
+}
+
 func (s *site) CreateFact(title, details, source_name, source_url, tags string, user *user) *Fact {
 	return s.p.CreateFact(title, details, source_name, source_url, tags, user)
 }

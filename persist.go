@@ -50,6 +50,16 @@ func (p *persistence) GetUser(username string) (*user, error) {
 	return &user{Username: username, Password: []byte(password)}, err
 }
 
+func (p *persistence) UpdatePassword(username string, hashedPassword []byte) error {
+	stmt, err := p.Database.Prepare("update users set password = $1 where username = $2")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(hashedPassword, username)
+	return err
+}
+
 func (p *persistence) CreateFact(title, details, source_name, source_url, tags string, user *user) *Fact {
 	log.Println("CreateFact()")
 	tx, err := p.Database.Begin()

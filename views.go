@@ -254,6 +254,66 @@ func logoutHandler(w http.ResponseWriter, r *http.Request, s *site) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
+type PasswordResponse struct {
+	Error string
+	SiteResponse
+}
+
+func passwordHandler(w http.ResponseWriter, r *http.Request, s *site) {
+	sess, _ := s.Store.Get(r, "augend")
+	username, found := sess.Values["user"]
+	if !found || username == "" {
+		http.Redirect(w, r, "/login/", http.StatusFound)
+		return
+	}
+
+	user, err := s.GetUser(username.(string))
+	if err != nil {
+		fmt.Fprintf(w, "user not found")
+		return
+	}
+
+	if r.Method != "POST" {
+		pr := PasswordResponse{}
+		pr.Username = username.(string)
+		tmpl := getTemplate("password.html")
+		tmpl.Execute(w, pr)
+		return
+	}
+
+	current := r.FormValue("current")
+	newpass := r.FormValue("password")
+	pass2 := r.FormValue("pass2")
+
+	renderError := func(msg string) {
+		pr := PasswordResponse{Error: msg}
+		pr.Username = username.(string)
+		tmpl := getTemplate("password.html")
+		tmpl.Execute(w, pr)
+	}
+
+	if !user.CheckPassword(current) {
+		renderError("current password is incorrect")
+		return
+	}
+	if newpass == "" {
+		renderError("new password cannot be empty")
+		return
+	}
+	if newpass != pass2 {
+		renderError("new passwords don't match")
+		return
+	}
+
+	hashed := user.SetPassword(newpass)
+	if err := s.UpdatePassword(user.Username, hashed); err != nil {
+		log.Println(err)
+		renderError("could not update password")
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 func getTemplate(filename string) *template.Template {
 	var t = template.New("base.html")
 	return template.Must(t.ParseFiles(

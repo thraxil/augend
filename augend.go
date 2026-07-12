@@ -100,6 +100,7 @@ func main() {
 	mux.HandleFunc("/add/", makeHandler(addHandler, s))
 	mux.HandleFunc("/login/", makeHandler(loginHandler, s))
 	mux.HandleFunc("/logout/", makeHandler(logoutHandler, s))
+	mux.HandleFunc("/password/", makeHandler(passwordHandler, s))
 	mux.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))
 	mux.HandleFunc("/debug/vars", expvarHandler)
 	mux.Handle("/media/", http.StripPrefix("/media/",
