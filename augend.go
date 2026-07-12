@@ -13,19 +13,13 @@ import (
 
 	"github.com/braintree/manners"
 	"github.com/gorilla/sessions"
-	"github.com/peterbourgon/g2s"
 )
 
 var template_dir = "templates"
-var statsd g2s.Statter
 
 func makeHandler(f func(http.ResponseWriter, *http.Request, *site), s *site) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		t0 := time.Now()
 		f(w, r, s)
-		t1 := time.Now()
-		statsd.Counter(1.0, "augend.response.200", 1)
-		statsd.Timing(1.0, "augend.view.GET", t1.Sub(t0))
 	}
 }
 
@@ -94,7 +88,6 @@ func main() {
 	//		dumpJSON(dumpjson)
 	//		return
 	//	}
-	statsd, _ = g2s.Dial("udp", "127.0.0.1:8125")
 
 	address := ":" + port
 	log.Println("listening on", address)
