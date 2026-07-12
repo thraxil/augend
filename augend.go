@@ -98,7 +98,6 @@ func main() {
 	mux.HandleFunc("/fact/", makeHandler(factHandler, s))
 	mux.HandleFunc("/tag/", makeHandler(tagHandler, s))
 	mux.HandleFunc("/add/", makeHandler(addHandler, s))
-	mux.HandleFunc("/register/", makeHandler(registerHandler, s))
 	mux.HandleFunc("/login/", makeHandler(loginHandler, s))
 	mux.HandleFunc("/logout/", makeHandler(logoutHandler, s))
 	mux.HandleFunc("/smoketest/", makeHandler(smoketestHandler, s))

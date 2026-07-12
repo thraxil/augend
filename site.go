@@ -15,10 +15,6 @@ func newSite(p *persistence, store sessions.Store) *site {
 	return &s
 }
 
-func (s *site) CreateUser(username, password string) (*user, error) {
-	return s.p.CreateUser(username, password)
-}
-
 func (s *site) GetUser(username string) (*user, error) {
 	return s.p.GetUser(username)
 }
