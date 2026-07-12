@@ -219,36 +219,6 @@ func addHandler(w http.ResponseWriter, r *http.Request, s *site) {
 	}
 }
 
-func registerForm(w http.ResponseWriter, req *http.Request) {
-	tmpl := getTemplate("register.html")
-	tmpl.Execute(w, nil)
-}
-
-func registerHandler(w http.ResponseWriter, r *http.Request, s *site) {
-	if r.Method == "GET" {
-		registerForm(w, r)
-		return
-	}
-	username, password, pass2 := r.FormValue("username"), r.FormValue("password"), r.FormValue("pass2")
-	if password != pass2 {
-		fmt.Fprintf(w, "passwords don't match")
-		return
-	}
-	log.Println("passwords match")
-	user, err := s.CreateUser(username, password)
-	if err != nil {
-		fmt.Println(err)
-		fmt.Fprintf(w, "could not create user")
-		return
-	}
-	log.Println("created user")
-
-	sess, _ := s.Store.Get(r, "augend")
-	sess.Values["user"] = user.Username
-	sess.Save(r, w)
-	http.Redirect(w, r, "/", http.StatusFound)
-}
-
 func loginForm(w http.ResponseWriter, req *http.Request) {
 	tmpl := getTemplate("login.html")
 	tmpl.Execute(w, nil)

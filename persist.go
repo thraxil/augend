@@ -33,32 +33,6 @@ func (p *persistence) Close() {
 	p.Database.Close()
 }
 
-func (p *persistence) CreateUser(username, password string) (*user, error) {
-	var user user
-	user.Username = username
-	encpassword := user.SetPassword(password)
-
-	tx, err := p.Database.Begin()
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-	stmt, err := tx.Prepare("insert into users (username, password) values ($1, $2)")
-	if err != nil {
-		log.Fatal(err)
-		tx.Rollback()
-		return nil, err
-	}
-	defer stmt.Close()
-	_, err = stmt.Exec(username, encpassword)
-	tx.Commit()
-
-	u, _ := p.GetUser(username)
-	log.Println("created")
-	return u, nil
-
-}
-
 func (p *persistence) GetUser(username string) (*user, error) {
 	stmt, err := p.Database.Prepare("select password from users where username = $1")
 	if err != nil {
