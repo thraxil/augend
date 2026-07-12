@@ -307,8 +307,12 @@ func (p *persistence) GetFactById(id string) (*Fact, error) {
 		log.Println(err)
 		return nil, err
 	}
-	user, _ := p.GetUser(owner)
-	fact.User = *user
+	user, err := p.GetUser(owner)
+	if err != nil {
+		log.Println(err)
+	} else {
+		fact.User = *user
+	}
 	fact.UUID = id
 
 	tags := make([]Tag, 0)
